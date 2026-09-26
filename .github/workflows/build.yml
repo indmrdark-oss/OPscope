@@ -21,6 +21,11 @@ jobs:
         with:
           gradle-version: '8.2'
 
+      - name: Add sdkmanager to PATH
+        run: |
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
       - name: Accept SDK licenses and install platform + build-tools
         run: |
           yes | sdkmanager --licenses > /dev/null || true
