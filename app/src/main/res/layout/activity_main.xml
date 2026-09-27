@@ -26,7 +26,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:text="☰"
-                android:textColor="#4A90FF"
+                android:textColor="#3D6FA8"
                 android:textSize="20sp"
                 android:background="#122038" />
 
@@ -43,88 +43,112 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- ===== HORIZONTAL SPLIT: graph left, controls right ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <!-- LEFT PANE: graph + zoom + capture -->
-            <LinearLayout
+            <!-- LEFT PANE: small graph + stats + capture -->
+            <ScrollView
                 android:layout_width="0dp"
                 android:layout_weight="1.3"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="12dp">
-
-                <com.opscope.app.ScopeView
-                    android:id="@+id/scopeView"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginBottom="6dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Pinch to zoom · drag to pan · real ADC samples only"
-                    android:textColor="#7A93B8"
-                    android:textSize="9.5sp"
-                    android:layout_marginBottom="6dp" />
+                android:layout_height="match_parent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
-                    <Button android:id="@+id/zoomOutBtn" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:text="Zoom −" android:textSize="11sp" />
-                    <Button android:id="@+id/resetZoomBtn" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:text="Reset" android:textSize="11sp" />
-                    <Button android:id="@+id/zoomInBtn" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:text="Zoom +" android:textSize="11sp" />
+                    <com.opscope.app.ScopeView
+                        android:id="@+id/scopeView"
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:layout_marginBottom="6dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+
+                        <Button android:id="@+id/zoomOutBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Zoom −" android:textSize="11sp" />
+                        <Button android:id="@+id/resetZoomBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Reset" android:textSize="11sp" />
+                        <Button android:id="@+id/zoomInBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Zoom +" android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="2"
+                        android:layout_marginBottom="10dp">
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="TARGET" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rTarget" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="MEASURED" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rMeasured" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="MAX" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rMax" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="MIN" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rMin" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="DUTY" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rDuty" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="ERROR" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rError" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="2" android:layout_margin="3dp"
+                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
+                            <TextView android:text="VOLTAGE" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                            <TextView android:id="@+id/rVoltage" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+                    </GridLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button android:id="@+id/liveCaptureBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Start Live Capture" android:textSize="11sp" />
+                        <Button android:id="@+id/reconBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Clear Capture" android:textSize="11sp" />
+                    </LinearLayout>
                 </LinearLayout>
+            </ScrollView>
 
-                <TextView
-                    android:id="@+id/rVoltage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Voltage: -- (no real capture yet)"
-                    android:textColor="#4A90FF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="2dp" />
-
-                <TextView
-                    android:id="@+id/rRate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Rate: --"
-                    android:textColor="#7A93B8"
-                    android:textSize="10sp"
-                    android:layout_marginBottom="8dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <Button android:id="@+id/liveCaptureBtn" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:text="Start Live Capture" android:textSize="11sp" />
-                    <Button android:id="@+id/reconBtn" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:text="Clear Capture" android:textSize="11sp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- divider -->
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="#1A2740" />
 
-            <!-- RIGHT PANE: connect + dial + commands + stats + chat + log -->
+            <!-- RIGHT PANE: connect + dial + lock + commands + log -->
             <ScrollView
                 android:layout_width="0dp"
                 android:layout_weight="1"
@@ -162,21 +186,36 @@
                             android:textSize="11sp" />
                     </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="FREQUENCY CONTROL"
-                        android:textColor="#7A93B8"
-                        android:textSize="10sp"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginBottom="2dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="FREQUENCY CONTROL"
+                            android:textColor="#7A93B8"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/lockStatusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="L · UNLOCKED"
+                            android:textColor="#7A93B8"
+                            android:textSize="10sp" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/rTargetBig"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="1000.00 Hz"
-                        android:textColor="#4A90FF"
+                        android:textColor="#3D6FA8"
                         android:textSize="22sp"
                         android:textStyle="bold"
                         android:gravity="center"
@@ -202,6 +241,14 @@
                         <Button android:id="@+id/precisionBtn" android:layout_width="0dp" android:layout_weight="1"
                             android:layout_height="wrap_content" android:text="FAST" android:textSize="11sp" />
                     </LinearLayout>
+
+                    <Button
+                        android:id="@+id/lockBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="L LOCK"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="6dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -265,7 +312,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:columnCount="3"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginBottom="8dp">
 
                         <Button android:id="@+id/btnCmdC" android:layout_width="0dp" android:layout_columnWeight="1"
                             android:layout_height="wrap_content" android:layout_margin="3dp"
@@ -276,70 +323,63 @@
                         <View android:layout_width="0dp" android:layout_columnWeight="1" android:layout_height="wrap_content" />
                     </GridLayout>
 
-                    <GridLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="3"
-                        android:layout_marginBottom="10dp">
-
-                        <TextView android:id="@+id/rTarget" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:text="Target: --" android:textColor="#4A90FF" android:padding="6dp" android:textSize="11sp" />
-                        <TextView android:id="@+id/rMeasured" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:text="Measured: --" android:textColor="#4A90FF" android:padding="6dp" android:textSize="11sp" />
-                        <TextView android:id="@+id/rDuty" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:text="Duty: --" android:textColor="#4A90FF" android:padding="6dp" android:textSize="11sp" />
-                    </GridLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="OPSCOPE AI"
-                        android:textColor="#6AA8FF"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
-
-                    <ScrollView
-                        android:id="@+id/chatScroll"
-                        android:layout_width="match_parent"
-                        android:layout_height="90dp"
-                        android:background="#0D1420"
-                        android:layout_marginBottom="6dp">
-
-                        <TextView
-                            android:id="@+id/chatView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:textColor="#BFD4EE"
-                            android:fontFamily="monospace"
-                            android:textSize="10sp" />
-                    </ScrollView>
-
+                    <!-- Manual frequency entry (shown when M tapped) -->
                     <LinearLayout
+                        android:id="@+id/manualFreqRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp">
+
+                        <EditText
+                            android:id="@+id/manualFreqInput"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="frequency in Hz"
+                            android:textColor="#BFD4EE"
+                            android:textColorHint="#7A93B8"
+                            android:inputType="numberDecimal"
+                            android:singleLine="true"
+                            android:imeOptions="actionDone"
+                            android:textSize="12sp" />
+
+                        <Button
+                            android:id="@+id/manualFreqSetBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Set"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Manual duty entry (shown when D tapped) -->
+                    <LinearLayout
+                        android:id="@+id/manualDutyRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
                         android:layout_marginBottom="10dp">
 
                         <EditText
-                            android:id="@+id/chatInput"
+                            android:id="@+id/manualDutyInput"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="Ask about measured Hz, capture, or ESP32"
+                            android:layout_height="wrap_content"
+                            android:hint="duty % (0-100)"
                             android:textColor="#BFD4EE"
                             android:textColorHint="#7A93B8"
-                            android:inputType="text"
+                            android:inputType="numberDecimal"
                             android:singleLine="true"
-                            android:imeOptions="actionSend"
-                            android:textSize="11sp" />
+                            android:imeOptions="actionDone"
+                            android:textSize="12sp" />
 
                         <Button
-                            android:id="@+id/chatSendBtn"
+                            android:id="@+id/manualDutySetBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ask"
+                            android:text="Set"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -369,7 +409,7 @@
                     <ScrollView
                         android:id="@+id/logScroll"
                         android:layout_width="match_parent"
-                        android:layout_height="120dp"
+                        android:layout_height="140dp"
                         android:background="#050A10">
 
                         <TextView
@@ -377,7 +417,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:padding="8dp"
-                            android:textColor="#4A90FF"
+                            android:textColor="#3D6FA8"
                             android:fontFamily="monospace"
                             android:textSize="10sp" />
                     </ScrollView>
@@ -409,7 +449,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:text="☰"
-                android:textColor="#4A90FF"
+                android:textColor="#3D6FA8"
                 android:textSize="20sp"
                 android:background="#122038" />
 
@@ -491,7 +531,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="10dp"
-                        android:textColor="#4A90FF"
+                        android:textColor="#3D6FA8"
                         android:fontFamily="monospace"
                         android:textSize="10sp"
                         android:textIsSelectable="true" />
@@ -571,7 +611,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="MAIN APP"
-                android:textColor="#4A90FF"
+                android:textColor="#3D6FA8"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
