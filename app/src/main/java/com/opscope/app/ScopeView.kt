@@ -57,11 +57,16 @@ class ScopeView @JvmOverloads constructor(
     private val maxZoom = 32f
     private var panCenter = 0.5f
 
+    private fun hasSamples(): Boolean {
+        val s = capturedSamples
+        return s != null && s.isNotEmpty()
+    }
+
     private val scaleDetector = ScaleGestureDetector(
         context,
         object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
-                if (capturedSamples.isNullOrEmpty()) return false
+                if (!hasSamples()) return false
                 zoomLevel = (zoomLevel * detector.scaleFactor).coerceIn(minZoom, maxZoom)
                 invalidate()
                 return true
@@ -80,7 +85,7 @@ class ScopeView @JvmOverloads constructor(
                 distanceX: Float,
                 distanceY: Float
             ): Boolean {
-                if (capturedSamples.isNullOrEmpty() || width <= 0) return false
+                if (!hasSamples() || width <= 0) return false
                 val windowFraction = 1f / zoomLevel
                 val deltaFraction = (distanceX / width) * windowFraction
                 panCenter = (panCenter + deltaFraction).coerceIn(
@@ -118,8 +123,9 @@ class ScopeView @JvmOverloads constructor(
         canvas.drawLine(0f, h / 2f, w, h / 2f, midlinePaint)
 
         canvas.drawText(fidelityLabel, 20f, 28f, labelPaint)
+
         val samples = capturedSamples
-        if (samples.isNullOrEmpty()) {
+        if (samples == null || samples.isEmpty()) {
             canvas.drawText("CONNECT ESP32 · START LIVE CAPTURE", 20f, h / 2f, mutedPaint)
             canvas.drawText("NO SYNTHETIC WAVEFORM", 20f, h / 2f + 32f, mutedPaint)
             return
@@ -200,13 +206,13 @@ class ScopeView @JvmOverloads constructor(
     fun showReconstructed() = clearCapture()
 
     fun zoomIn() {
-        if (capturedSamples.isNullOrEmpty()) return
+        if (!hasSamples()) return
         zoomLevel = (zoomLevel * 1.5f).coerceIn(minZoom, maxZoom)
         invalidate()
     }
 
     fun zoomOut() {
-        if (capturedSamples.isNullOrEmpty()) return
+        if (!hasSamples()) return
         zoomLevel = (zoomLevel / 1.5f).coerceIn(minZoom, maxZoom)
         invalidate()
     }
