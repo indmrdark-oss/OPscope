@@ -5,9 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
@@ -65,8 +67,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var zoomOutBtn: Button
     private lateinit var resetZoomBtn: Button
 
-    private lateinit var cmdInput: EditText
-    private lateinit var sendBtn: Button
     private lateinit var chatInput: EditText
     private lateinit var chatSendBtn: Button
     private lateinit var chatView: TextView
@@ -96,6 +96,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var speed1xBtn: Button
     private lateinit var speed2xBtn: Button
 
+    private lateinit var btnCmdH: Button
+    private lateinit var btnCmdM: Button
+    private lateinit var btnCmdD: Button
+    private lateinit var btnCmdC: Button
+    private lateinit var btnCmdS: Button
+
     private lateinit var sessionLogger: SessionLogger
 
     private val ACTION_USB_PERMISSION = "com.opscope.app.USB_PERMISSION"
@@ -121,7 +127,6 @@ class MainActivity : AppCompatActivity() {
     private var capIsReal = false
     private var capInFlight = false
     private var lastCapDurationMs = 400L
-    private var lastCmdTapMs = 0L
 
     private val pendingLogbookLines = StringBuilder()
     private var logbookFlushScheduled = false
@@ -240,8 +245,6 @@ class MainActivity : AppCompatActivity() {
         zoomOutBtn = findViewById(R.id.zoomOutBtn)
         resetZoomBtn = findViewById(R.id.resetZoomBtn)
 
-        cmdInput = findViewById(R.id.cmdInput)
-        sendBtn = findViewById(R.id.sendBtn)
         chatInput = findViewById(R.id.chatInput)
         chatSendBtn = findViewById(R.id.chatSendBtn)
         chatView = findViewById(R.id.chatView)
@@ -271,6 +274,12 @@ class MainActivity : AppCompatActivity() {
         speed1xBtn = findViewById(R.id.speed1xBtn)
         speed2xBtn = findViewById(R.id.speed2xBtn)
 
+        btnCmdH = findViewById(R.id.btnCmdH)
+        btnCmdM = findViewById(R.id.btnCmdM)
+        btnCmdD = findViewById(R.id.btnCmdD)
+        btnCmdC = findViewById(R.id.btnCmdC)
+        btnCmdS = findViewById(R.id.btnCmdS)
+
         setupUsbReceiver()
         setupButtons()
         setupDial()
@@ -298,6 +307,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendSingleLetterCommand(letter: String) {
+        appendCommandLog(letter)
+        sessionLogger.log("TX", letter)
+        serial?.writeLine(letter)
+    }
+
     private fun setupButtons() {
         connectBtn.setOnClickListener {
             if (serial != null) disconnect("user requested") else requestDevice()
@@ -320,44 +335,16 @@ class MainActivity : AppCompatActivity() {
             sessionLogger.log("APP", "session file list refreshed")
         }
 
-        sendBtn.setOnClickListener {
-            val command = cmdInput.text.toString().trim()
-            if (command.isNotEmpty()) {
-                appendCommandLog(command)
-                sessionLogger.log("TX", command)
-                serial?.writeLine(command)
-                cmdInput.setText("")
-            }
-        }
+        btnCmdH.setOnClickListener { sendSingleLetterCommand("H") }
+        btnCmdM.setOnClickListener { sendSingleLetterCommand("M") }
+        btnCmdD.setOnClickListener { sendSingleLetterCommand("D") }
+        btnCmdC.setOnClickListener { sendSingleLetterCommand("C") }
+        btnCmdS.setOnClickListener { sendSingleLetterCommand("S") }
 
         chatSendBtn.setOnClickListener { sendChatMessage() }
         chatInput.setOnEditorActionListener { _, _, _ ->
             sendChatMessage()
             true
-        }
-
-        cmdInput.setOnTouchListener { _, e ->
-            if (e.actionMasked == MotionEvent.ACTION_DOWN) {
-                lastCmdTapMs = SystemClock.elapsedRealtime()
-                handler.postDelayed({
-                    if (cmdInput.isAttachedToWindow) {
-                        cmdInput.requestFocus()
-                        var p: android.view.ViewParent? = cmdInput.parent
-                        while (p != null && p !is ScrollView) p = p.parent
-                        (p as? ScrollView)?.fullScroll(View.FOCUS_DOWN)
-                    }
-                }, 400L)
-            }
-            false
-        }
-        cmdInput.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && SystemClock.elapsedRealtime() - lastCmdTapMs < 1000L) {
-                handler.postDelayed({
-                    if (cmdInput.isAttachedToWindow && !cmdInput.hasFocus()) {
-                        cmdInput.requestFocus()
-                    }
-                }, 250L)
-            }
         }
 
         liveCaptureBtn.setOnClickListener {
@@ -537,10 +524,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateDrawerHighlight() {
-        val activeBg = 0xFF123524.toInt()
+        val activeBg = 0xFF122038.toInt()
         val idleBg = 0x00000000
-        val activeColor = 0xFF4DFFA0.toInt()
-        val idleColor = 0xFFBFE8CD.toInt()
+        val activeColor = 0xFF4A90FF.toInt()
+        val idleColor = 0xFFBFD4EE.toInt()
         val mainTitle = drawerMainOpt.getChildAt(0) as TextView
         val logTitle = drawerLogOpt.getChildAt(0) as TextView
         drawerMainOpt.setBackgroundColor(if (currentScreen == 0) activeBg else idleBg)
@@ -557,11 +544,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun flushLogbookLines() {
         logbookFlushScheduled = false
-
-        if (::cmdInput.isInitialized && cmdInput.hasFocus()) {
-            if (pendingLogbookLines.isNotEmpty()) scheduleLogbookFlush()
-            return
-        }
 
         val chunk: String
         synchronized(pendingLogbookLines) {
@@ -586,14 +568,14 @@ class MainActivity : AppCompatActivity() {
         val files = sessionLogger.listSessions()
         if (files.isEmpty()) {
             val t = makeRow("No saved sessions yet.")
-            t.setTextColor(0xFF6F9A80.toInt())
+            t.setTextColor(0xFF7A93B8.toInt())
             sessionsList.addView(t)
             return
         }
         val dateFmt = SimpleDateFormat("dd MMM yyyy · HH:mm:ss", Locale.US)
         for (f in files) {
             val t = makeRow("${f.name}\n${dateFmt.format(Date(f.lastModified()))} · ${f.length() / 1024} KB")
-            t.setTextColor(0xFFBFE8CD.toInt())
+            t.setTextColor(0xFFBFD4EE.toInt())
             t.isClickable = true
             t.setOnClickListener { openSessionFile(f) }
             sessionsList.addView(t)
@@ -952,18 +934,21 @@ class MainActivity : AppCompatActivity() {
             "fast" to precisionBtn
         )
         for ((key, button) in buttons) {
-            button.background = GradientDrawable().apply {
+            val isSelected = key == selected
+            val shape = GradientDrawable().apply {
                 setColor(Color.TRANSPARENT)
                 setStroke(
-                    if (key == selected) 3 else 1,
-                    if (key == selected) Color.parseColor("#6AA8FF")
-                    else Color.parseColor("#315347")
+                    if (isSelected) 3 else 1,
+                    if (isSelected) Color.parseColor("#4A90FF")
+                    else Color.parseColor("#2A3D5C")
                 )
                 cornerRadius = 10f
             }
+            val rippleColor = ColorStateList.valueOf(Color.parseColor("#334A90FF"))
+            button.background = RippleDrawable(rippleColor, shape, shape)
             button.setTextColor(
-                if (key == selected) Color.parseColor("#6AA8FF")
-                else Color.parseColor("#BFE8CD")
+                if (isSelected) Color.parseColor("#4A90FF")
+                else Color.parseColor("#BFD4EE")
             )
         }
     }
