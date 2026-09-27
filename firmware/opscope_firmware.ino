@@ -1,6 +1,7 @@
 // OPscope ESP32 firmware
 // Serial protocol (250000 baud, matches the Android app):
 //   TX->ESP32   F<hz>      set target frequency, e.g. F1000.00   (clamped 1-20000 Hz)
+//   TX->ESP32   P<pct>     set output duty cycle, e.g. P65.0     (clamped 0-100 %)
 //   TX->ESP32   C          request one real ADC capture
 //   TX->ESP32   H          reset/clear fault
 //   ESP32->TX   CAP,<n>,<rate>,REAL   capture header
@@ -10,11 +11,10 @@
 
 #include <driver/ledc.h>
 
-// ---- pin map (change to match your wiring) ----
-const int PIN_PWM_OUT   = 25;  // signal output (drive gate driver / inverter from here)
-const int PIN_FREQ_IN   = 26;  // loop this back from PIN_PWM_OUT (or from the real output stage)
-const int PIN_ADC       = 34;  // ADC1 channel, samples the real output/inverter waveform
-const int PIN_FAULT_IN  = 27;  // from external protection comparator: HIGH = reverse/overvoltage
+const int PIN_PWM_OUT   = 25;
+const int PIN_FREQ_IN   = 26;
+const int PIN_ADC       = 34;
+const int PIN_FAULT_IN  = 27;
 
 const double F_MIN = 1.0;
 const double F_MAX = 20000.0;
@@ -22,10 +22,12 @@ const double F_MAX = 20000.0;
 const ledc_timer_t LEDC_TIMER   = LEDC_TIMER_0;
 const ledc_channel_t LEDC_CHAN  = LEDC_CHANNEL_0;
 const ledc_mode_t LEDC_MODE     = LEDC_LOW_SPEED_MODE;
-const int PWM_RES_BITS = 10;              // 0-1023 duty steps
-const int PWM_DUTY     = 512;             // ~50% duty
+const int PWM_RES_BITS = 10;
+const int PWM_MAX_DUTY_STEPS = (1 << PWM_RES_BITS) - 1;
 
 double targetFreq = 1000.0;
+double currentDutyPercent = 50.0;
+
 volatile unsigned long lastEdgeMicros = 0;
 volatile unsigned long periodMicros   = 0;
 volatile bool edgeSeen = false;
@@ -51,14 +53,24 @@ void IRAM_ATTR onFault() {
   ledc_update_duty(LEDC_MODE, LEDC_CHAN);
 }
 
+void applyDuty() {
+  if (faultLatched) return;
+  int steps = (int)(currentDutyPercent / 100.0 * PWM_MAX_DUTY_STEPS);
+  steps = constrain(steps, 0, PWM_MAX_DUTY_STEPS);
+  ledc_set_duty(LEDC_MODE, LEDC_CHAN, steps);
+  ledc_update_duty(LEDC_MODE, LEDC_CHAN);
+}
+
 void setPwmFrequency(double hz) {
   hz = constrain(hz, F_MIN, F_MAX);
   targetFreq = hz;
   ledc_set_freq(LEDC_MODE, LEDC_TIMER, (uint32_t)hz);
-  if (!faultLatched) {
-    ledc_set_duty(LEDC_MODE, LEDC_CHAN, PWM_DUTY);
-    ledc_update_duty(LEDC_MODE, LEDC_CHAN);
-  }
+  applyDuty();
+}
+
+void setDutyPercent(double pct) {
+  currentDutyPercent = constrain(pct, 0.0, 100.0);
+  applyDuty();
 }
 
 void doCapture() {
@@ -95,9 +107,13 @@ void handleCommand(String cmd) {
 
   if (cmd[0] == 'F' || cmd[0] == 'f') {
     double hz = cmd.substring(1).toDouble();
-    if (hz > 0) {
-      setPwmFrequency(hz);
-    }
+    if (hz > 0) setPwmFrequency(hz);
+  } else if (cmd[0] == 'P' || cmd[0] == 'p') {
+    double pct = cmd.substring(1).toDouble();
+    setDutyPercent(pct);
+    Serial.print("AI> duty set to ");
+    Serial.print(currentDutyPercent, 1);
+    Serial.println("%");
   } else if (cmd == "C") {
     doCapture();
   } else if (cmd == "H") {
@@ -109,7 +125,9 @@ void handleCommand(String cmd) {
     Serial.print(periodMicros > 0 ? (1000000.0 / periodMicros) : 0.0, 2);
     Serial.println(" Hz");
   } else if (cmd == "D") {
-    Serial.println("AI> duty fixed at 50%");
+    Serial.print("AI> duty currently ");
+    Serial.print(currentDutyPercent, 1);
+    Serial.println("%");
   } else if (cmd == "S") {
     Serial.println("AI> status requested");
   } else {
@@ -186,7 +204,9 @@ void loop() {
       Serial.print(targetFreq, 2);
       Serial.print(" Measured: ");
       Serial.print(measured, 2);
-      Serial.print(" Duty: 50.00 Err: ");
+      Serial.print(" Duty: ");
+      Serial.print(currentDutyPercent, 2);
+      Serial.print(" Err: ");
       Serial.println(err, 2);
     } else {
       Serial.print("Target: ");
