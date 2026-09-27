@@ -21,6 +21,12 @@ class DialView @JvmOverloads constructor(
     var onFrequency: ((Double) -> Unit)? = null
     var onCommit: ((Double) -> Unit)? = null
 
+    var isLocked: Boolean = false
+        set(value) {
+            field = value
+            invalidate()
+        }
+
     var scaleMode: String = "linear"
         set(value) {
             field = value
@@ -87,12 +93,12 @@ class DialView @JvmOverloads constructor(
         val precision = scaleMode == "precision"
 
         paint.style = Paint.Style.FILL
-        paint.color = 0xFF181818.toInt()
+        paint.color = if (isLocked) 0xFF221818.toInt() else 0xFF181818.toInt()
         canvas.drawCircle(cx, cy, radius, paint)
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 6f
-        paint.color = 0xFF555555.toInt()
+        paint.color = if (isLocked) 0xFFFF6666.toInt() else 0xFF555555.toInt()
         canvas.drawCircle(cx, cy, radius, paint)
 
         val refRad = Math.toRadians(startAngle)
@@ -129,9 +135,9 @@ class DialView @JvmOverloads constructor(
         }
 
         paint.textSize = radius * 0.10f
-        paint.color = 0xFF6F9A80.toInt()
+        paint.color = if (isLocked) 0xFFFF6666.toInt() else 0xFF6F9A80.toInt()
         canvas.drawText(
-            when (scaleMode) {
+            if (isLocked) "LOCKED" else when (scaleMode) {
                 "log" -> "LOG"
                 "precision" -> "PREC"
                 else -> "LIN"
@@ -143,7 +149,7 @@ class DialView @JvmOverloads constructor(
         val rad = Math.toRadians(angle)
         val needleLength = radius * 0.68f
         paint.strokeWidth = 8f
-        paint.color = 0xFFFF4444.toInt()
+        paint.color = if (isLocked) 0xFF884444.toInt() else 0xFFFF4444.toInt()
         canvas.drawLine(
             cx, cy,
             cx + cos(rad).toFloat() * needleLength,
@@ -156,6 +162,8 @@ class DialView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (isLocked) return true
+
         val cx = width / 2f
         val cy = height / 2f
 
