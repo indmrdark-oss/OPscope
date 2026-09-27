@@ -1,7 +1,7 @@
 <resources>
     <style name="Theme.Opscope" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#4DFFA0</item>
-        <item name="colorPrimaryDark">#070B08</item>
-        <item name="android:windowBackground">#070B08</item>
+        <item name="colorPrimary">#4A90FF</item>
+        <item name="colorPrimaryDark">#070B10</item>
+        <item name="android:windowBackground">#070B10</item>
     </style>
 </resources>
