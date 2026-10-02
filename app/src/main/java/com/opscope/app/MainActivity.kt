@@ -323,7 +323,31 @@ class MainActivity : AppCompatActivity() {
         styleLockButton()
         styleProtection()
         styleConnState()
+
+        // --- FIX: every button that doesn't get its own styling function
+        // (H/M/D/C/S commands, the nudge row, and the two "Set" buttons)
+        // was falling back to MaterialButton's default solid-blue fill,
+        // since android:background alone is ignored by MaterialButton.
+        // Give them all the same flat black-bg/blue-border look explicitly.
+        styleToggle(btnCmdH, false)
+        styleToggle(btnCmdM, false)
+        styleToggle(btnCmdD, false)
+        styleToggle(btnCmdC, false)
+        styleToggle(btnCmdS, false)
+        styleToggle(downFreqBtn, false)
+        styleToggle(upFreqBtn, false)
         styleToggle(speed1xBtn, true)
+        styleToggle(speed2xBtn, false)
+        styleToggle(minus1Btn, false)
+        styleToggle(minus01Btn, false)
+        styleToggle(plus01Btn, false)
+        styleToggle(plus1Btn, false)
+        styleToggle(manualFreqSetBtn, false)
+        styleToggle(manualDutySetBtn, false)
+        styleToggle(clearLogBtn, false)
+        styleToggle(resetBtn, false)
+        // --- end fix ---
+
         appendLog("OPscope ready. Output stays off until Connect.", "info")
     }
 
@@ -1009,6 +1033,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Shared black-bg/blue-border look used by every plain button in the app.
+    // on=true gives the bolder/lit "pressed-and-held" look (used for latched
+    // toggles like C/M/D, the active speed, and as the base look for L/REAL/etc
+    // via their own styling functions which follow the same pattern).
     private fun styleToggle(button: Button, on: Boolean) {
         val shape = GradientDrawable().apply {
             setColor(if (on) Color.parseColor("#14284A") else Color.TRANSPARENT)
