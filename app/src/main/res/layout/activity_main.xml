@@ -4,7 +4,7 @@
     android:id="@+id/slideRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#070B10">
+    android:background="#05070A">
 
     <LinearLayout
         android:id="@+id/mainPage"
@@ -14,33 +14,39 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:orientation="horizontal"
-            android:background="#0D1420">
+            android:background="#0A0E14"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/menuBtnMain"
-                android:layout_width="56dp"
+                android:layout_width="48dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
                 android:text="☰"
-                android:textColor="#3D6FA8"
-                android:textSize="20sp"
-                android:background="#122038" />
+                android:textColor="#4A90FF"
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="12dp"
-                android:paddingStart="12dp"
-                android:text="OPSCOPE — REAL SIGNAL INSTRUMENT"
-                android:textColor="#7A93B8"
-                android:textSize="12sp"
+                android:text="OPscope"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="14dp"
+                android:text="ESP32 SIGNAL INSTRUMENT"
+                android:textColor="#5A7099"
+                android:textSize="8sp"
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
         <LinearLayout
@@ -49,106 +55,185 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <!-- LEFT PANE: small graph + stats + capture -->
-            <ScrollView
+            <!-- LEFT PANE: graph, stats, protection -->
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_weight="1.3"
-                android:layout_height="match_parent">
+                android:layout_weight="1.27"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="10dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="5dp">
 
-                    <com.opscope.app.ScopeView
-                        android:id="@+id/scopeView"
-                        android:layout_width="match_parent"
-                        android:layout_height="160dp"
-                        android:layout_marginBottom="6dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="10dp">
+                        android:text="LIVE CAPTURE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
 
-                        <Button android:id="@+id/zoomOutBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Zoom −" android:textSize="11sp" />
-                        <Button android:id="@+id/resetZoomBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Reset" android:textSize="11sp" />
-                        <Button android:id="@+id/zoomInBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Zoom +" android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <GridLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/captureChip"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:columnCount="2"
-                        android:layout_marginBottom="10dp">
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="TARGET" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rTarget" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="MEASURED" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rMeasured" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="MAX" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rMax" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="MIN" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rMin" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="DUTY" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rDuty" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="ERROR" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rError" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout android:layout_width="0dp" android:layout_columnWeight="2" android:layout_margin="3dp"
-                            android:orientation="vertical" android:background="#0D1420" android:padding="8dp">
-                            <TextView android:text="VOLTAGE" android:textColor="#7A93B8" android:textSize="9sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                            <TextView android:id="@+id/rVoltage" android:text="--" android:textColor="#3D6FA8" android:textSize="13sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        </LinearLayout>
-                    </GridLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <Button android:id="@+id/liveCaptureBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Start Live Capture" android:textSize="11sp" />
-                        <Button android:id="@+id/reconBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Clear Capture" android:textSize="11sp" />
-                    </LinearLayout>
+                        android:text="WAITING"
+                        android:textColor="#8A97AD"
+                        android:textSize="8sp"
+                        android:background="#1A2A3547"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp" />
                 </LinearLayout>
-            </ScrollView>
+
+                <com.opscope.app.ScopeView
+                    android:id="@+id/scopeView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginBottom="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/streamText"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="NOT CONNECTED"
+                        android:textColor="#4A5568"
+                        android:textSize="8sp" />
+
+                    <TextView android:id="@+id/zoomOutBtn" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="ZOOM −" android:textColor="#4A90FF" android:textSize="9sp" android:textStyle="bold"
+                        android:paddingLeft="8dp" android:paddingRight="8dp" android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/zoomInBtn" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="ZOOM +" android:textColor="#4A90FF" android:textSize="9sp" android:textStyle="bold"
+                        android:paddingLeft="8dp" android:paddingRight="8dp" android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/resetZoomBtn" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="RESET" android:textColor="#4A90FF" android:textSize="9sp" android:textStyle="bold"
+                        android:paddingLeft="8dp" android:clickable="true" android:focusable="true" />
+                </LinearLayout>
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="4"
+                    android:layout_marginBottom="5dp">
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="TARGET" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rTarget" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="MEASURED" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rMeasured" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="MAX" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rMax" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="MIN" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rMin" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+                </GridLayout>
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="3"
+                    android:layout_marginBottom="8dp">
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="DUTY" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rDuty" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="ERROR" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rError" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_columnWeight="1" android:layout_margin="2dp"
+                        android:orientation="vertical" android:background="#0A0E14" android:padding="6dp">
+                        <TextView android:text="VOLTAGE" android:textColor="#5A7099" android:textSize="7sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/rVoltage" android:text="--" android:textColor="#e5e5e5" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+                </GridLayout>
+
+                <LinearLayout
+                    android:id="@+id/protStrip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="#071A160F"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/protTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PROTECTION CLEAR"
+                            android:textColor="#3AC8A0"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/protSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Reverse / over-voltage guard armed"
+                            android:textColor="#6FA08E"
+                            android:textSize="8sp" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/resetBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="RESET"
+                        android:textSize="10sp"
+                        android:background="#0A0E14"
+                        android:textColor="#4A90FF" />
+                </LinearLayout>
+            </LinearLayout>
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="#1A2740" />
+                android:background="#141C28" />
 
-            <!-- RIGHT PANE: connect + dial + lock + commands + log -->
+            <!-- RIGHT PANE: scrollable. Connect/Freq/Dial/Modes/Commands visible first,
+                 Report panel sits below the fold until the user scrolls down. -->
             <ScrollView
                 android:layout_width="0dp"
                 android:layout_weight="1"
@@ -158,75 +243,175 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:background="#0D1420"
-                        android:padding="10dp"
-                        android:layout_marginBottom="10dp"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/connStatus"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Not connected"
-                            android:textColor="#FF5A5A"
-                            android:textSize="12sp" />
-
-                        <Button
-                            android:id="@+id/connectBtn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Connect"
-                            android:textSize="11sp" />
-                    </LinearLayout>
+                    android:padding="10dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="2dp">
+                        android:layout_marginBottom="8dp">
+
+                        <Button
+                            android:id="@+id/connectBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Connect"
+                            android:textSize="10sp"
+                            android:background="#0A0E14"
+                            android:textColor="#4A90FF"
+                            android:minWidth="100dp" />
 
                         <TextView
+                            android:id="@+id/connStatus"
                             android:layout_width="0dp"
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
-                            android:text="FREQUENCY CONTROL"
-                            android:textColor="#7A93B8"
-                            android:textSize="10sp" />
-
-                        <TextView
-                            android:id="@+id/lockStatusText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="L · UNLOCKED"
-                            android:textColor="#7A93B8"
-                            android:textSize="10sp" />
+                            android:paddingStart="10dp"
+                            android:text="No active session"
+                            android:textColor="#6B7686"
+                            android:textSize="8.5sp" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/rTargetBig"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="1000.00 Hz"
-                        android:textColor="#3D6FA8"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:layout_marginBottom="8dp" />
+                        android:orientation="horizontal">
 
-                    <com.opscope.app.DialView
-                        android:id="@+id/dialView"
-                        android:layout_width="150dp"
-                        android:layout_height="150dp"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginBottom="8dp" />
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="OUTPUT FREQUENCY"
+                                    android:textColor="#5A7099"
+                                    android:textSize="7.5sp" />
+
+                                <TextView
+                                    android:id="@+id/outStateBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:text="OUTPUT OFF"
+                                    android:textColor="#8A97AD"
+                                    android:textSize="7sp"
+                                    android:background="#1A2A3547"
+                                    android:paddingLeft="5dp"
+                                    android:paddingRight="5dp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/rTargetBig"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="1000.00 Hz"
+                                android:textColor="#3A4E70"
+                                android:textSize="22sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/pendText"
+                                android:layout_width="match_parent"
+                                android:layout_height="14dp"
+                                android:text=""
+                                android:textColor="#E0A84A"
+                                android:textSize="7.5sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="end">
+
+                            <TextView
+                                android:id="@+id/lockStatusText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="L · UNLOCKED"
+                                android:textColor="#3AC8A0"
+                                android:textSize="8.5sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1–20,000 Hz"
+                                android:textColor="#5A7099"
+                                android:textSize="7.5sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- BIG DIAL -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:background="#070A0F">
+
+                        <com.opscope.app.DialView
+                            android:id="@+id/dialView"
+                            android:layout_width="148dp"
+                            android:layout_height="148dp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="6dp">
+
+                        <Button android:id="@+id/downFreqBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="◀ Hold" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/speed1xBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="1×" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/speed2xBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="2×" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/upFreqBtn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="Hold ▶" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginBottom="6dp">
+
+                        <Button android:id="@+id/minus1Btn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="−1" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/minus01Btn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="−0.1" android:textSize="7.5sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/plus01Btn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="+0.1" android:textSize="7.5sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/plus1Btn" android:layout_width="0dp" android:layout_weight="1"
+                            android:layout_height="wrap_content" android:text="+1" android:textSize="8sp"
+                            android:minHeight="0dp" android:minWidth="0dp" android:paddingTop="2dp" android:paddingBottom="2dp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -235,61 +420,24 @@
                         android:layout_marginBottom="6dp">
 
                         <Button android:id="@+id/coarseModeBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="REAL" android:textSize="11sp" />
+                            android:layout_height="wrap_content" android:text="REAL" android:textSize="10sp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/fineModeBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="PRECISE" android:textSize="11sp" />
+                            android:layout_height="wrap_content" android:text="PRECISE" android:textSize="10sp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/precisionBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="FAST" android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/lockBtn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="L LOCK"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="6dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="6dp">
-
-                        <Button android:id="@+id/downFreqBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="◀ Hold" android:textSize="11sp" />
-                        <Button android:id="@+id/speed1xBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="1×" android:textSize="11sp" />
-                        <Button android:id="@+id/speed2xBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="2×" android:textSize="11sp" />
-                        <Button android:id="@+id/upFreqBtn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="Hold ▶" android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="10dp">
-
-                        <Button android:id="@+id/minus1Btn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="−1" android:textSize="11sp" />
-                        <Button android:id="@+id/minus01Btn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="−0.1" android:textSize="10sp" />
-                        <Button android:id="@+id/plus01Btn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="+0.1" android:textSize="10sp" />
-                        <Button android:id="@+id/plus1Btn" android:layout_width="0dp" android:layout_weight="1"
-                            android:layout_height="wrap_content" android:text="+1" android:textSize="11sp" />
+                            android:layout_height="wrap_content" android:text="FAST" android:textSize="10sp"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                     </LinearLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="ESP32 COMMANDS"
-                        android:textColor="#7A93B8"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="6dp" />
+                        android:textColor="#5A7099"
+                        android:textSize="7sp"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="5dp" />
 
                     <GridLayout
                         android:layout_width="match_parent"
@@ -298,39 +446,38 @@
                         android:layout_marginBottom="6dp">
 
                         <Button android:id="@+id/btnCmdH" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:layout_margin="3dp"
-                            android:text="H\nHELP" android:textSize="11sp" android:lines="2" />
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="H\nHELP" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/btnCmdM" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:layout_margin="3dp"
-                            android:text="M\nMANUAL" android:textSize="11sp" android:lines="2" />
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="M\nMANUAL" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/btnCmdD" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:layout_margin="3dp"
-                            android:text="D\nDUTY" android:textSize="11sp" android:lines="2" />
-                    </GridLayout>
-
-                    <GridLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="3"
-                        android:layout_marginBottom="8dp">
-
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="D\nDUTY" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/btnCmdC" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:layout_margin="3dp"
-                            android:text="C\nCAPTURE" android:textSize="11sp" android:lines="2" />
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="C\nCAPTURE" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                         <Button android:id="@+id/btnCmdS" android:layout_width="0dp" android:layout_columnWeight="1"
-                            android:layout_height="wrap_content" android:layout_margin="3dp"
-                            android:text="S\nDIAGNOSTICS" android:textSize="11sp" android:lines="2" />
-                        <View android:layout_width="0dp" android:layout_columnWeight="1" android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="S\nDIAGNOSTICS" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
+                        <Button android:id="@+id/lockBtn" android:layout_width="0dp" android:layout_columnWeight="1"
+                            android:layout_height="wrap_content" android:layout_margin="2dp"
+                            android:text="L\nLOCK" android:textSize="10sp" android:lines="2"
+                            android:background="#0A0E14" android:textColor="#4A90FF" />
                     </GridLayout>
 
-                    <!-- Manual frequency entry (shown when M tapped) -->
                     <LinearLayout
                         android:id="@+id/manualFreqRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:visibility="gone"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="6dp">
 
                         <EditText
                             android:id="@+id/manualFreqInput"
@@ -339,28 +486,29 @@
                             android:layout_height="wrap_content"
                             android:hint="frequency in Hz"
                             android:textColor="#BFD4EE"
-                            android:textColorHint="#7A93B8"
+                            android:textColorHint="#5A7099"
                             android:inputType="numberDecimal"
                             android:singleLine="true"
                             android:imeOptions="actionDone"
-                            android:textSize="12sp" />
+                            android:textSize="11sp" />
 
                         <Button
                             android:id="@+id/manualFreqSetBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Set"
-                            android:textSize="11sp" />
+                            android:textSize="10sp"
+                            android:background="#0A0E14"
+                            android:textColor="#4A90FF" />
                     </LinearLayout>
 
-                    <!-- Manual duty entry (shown when D tapped) -->
                     <LinearLayout
                         android:id="@+id/manualDutyRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:visibility="gone"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginBottom="6dp">
 
                         <EditText
                             android:id="@+id/manualDutyInput"
@@ -369,58 +517,59 @@
                             android:layout_height="wrap_content"
                             android:hint="duty % (0-100)"
                             android:textColor="#BFD4EE"
-                            android:textColorHint="#7A93B8"
+                            android:textColorHint="#5A7099"
                             android:inputType="numberDecimal"
                             android:singleLine="true"
                             android:imeOptions="actionDone"
-                            android:textSize="12sp" />
+                            android:textSize="11sp" />
 
                         <Button
                             android:id="@+id/manualDutySetBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Set"
-                            android:textSize="11sp" />
+                            android:textSize="10sp"
+                            android:background="#0A0E14"
+                            android:textColor="#4A90FF" />
                     </LinearLayout>
 
+                    <!-- Report — naturally below the fold, reachable by scrolling -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="4dp">
+                        android:layout_marginBottom="3dp">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
-                            android:text="LOG"
-                            android:textColor="#7A93B8"
-                            android:textSize="10sp" />
+                            android:text="REPORT · ERRORS &amp; STATUS"
+                            android:textColor="#5A7099"
+                            android:textSize="7sp"
+                            android:letterSpacing="0.1" />
 
                         <Button
                             android:id="@+id/clearLogBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Clear Log"
-                            android:textSize="10sp" />
+                            android:text="Clear"
+                            android:textSize="9sp"
+                            android:background="#0A0E14"
+                            android:textColor="#4A90FF" />
                     </LinearLayout>
 
-                    <ScrollView
-                        android:id="@+id/logScroll"
+                    <TextView
+                        android:id="@+id/logView"
                         android:layout_width="match_parent"
-                        android:layout_height="140dp"
-                        android:background="#050A10">
-
-                        <TextView
-                            android:id="@+id/logView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:textColor="#3D6FA8"
-                            android:fontFamily="monospace"
-                            android:textSize="10sp" />
-                    </ScrollView>
+                        android:layout_height="wrap_content"
+                        android:minHeight="160dp"
+                        android:background="#03050A"
+                        android:padding="7dp"
+                        android:textColor="#3D6FA8"
+                        android:fontFamily="monospace"
+                        android:textSize="9sp" />
                 </LinearLayout>
             </ScrollView>
         </LinearLayout>
@@ -432,37 +581,34 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#070B10"
+        android:background="#05070A"
         android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:orientation="horizontal"
-            android:background="#0D1420">
+            android:background="#0A0E14"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/menuBtnLog"
-                android:layout_width="56dp"
+                android:layout_width="48dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
                 android:text="☰"
-                android:textColor="#3D6FA8"
-                android:textSize="20sp"
-                android:background="#122038" />
+                android:textColor="#4A90FF"
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="12dp"
-                android:paddingStart="12dp"
-                android:text="OPSCOPE — LOGBOOK"
-                android:textColor="#7A93B8"
-                android:textSize="12sp"
+                android:text="OPscope — Logbook"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -477,8 +623,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Swipe from the left edge (or tap ☰) to open the menu.\nEvery app action + every line from the ESP32, timestamped.\nOne .txt file per connection — tap a saved file below to open it."
-                android:textColor="#7A93B8"
-                android:textSize="9.5sp"
+                android:textColor="#5A7099"
+                android:textSize="9sp"
                 android:layout_marginBottom="8dp" />
 
             <LinearLayout
@@ -493,7 +639,9 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="● LIVE"
-                    android:textSize="11sp" />
+                    android:textSize="10sp"
+                    android:background="#0A0E14"
+                    android:textColor="#4A90FF" />
 
                 <Button
                     android:id="@+id/refreshFilesBtn"
@@ -501,7 +649,9 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="Refresh files"
-                    android:textSize="11sp" />
+                    android:textSize="10sp"
+                    android:background="#0A0E14"
+                    android:textColor="#4A90FF" />
             </LinearLayout>
 
             <TextView
@@ -510,7 +660,7 @@
                 android:layout_height="wrap_content"
                 android:text="Live session"
                 android:textColor="#FFB347"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="4dp" />
 
@@ -518,7 +668,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:background="#0D1420">
+                android:background="#0A0E14">
 
                 <ScrollView
                     android:id="@+id/logbookScroll"
@@ -533,7 +683,7 @@
                         android:padding="10dp"
                         android:textColor="#3D6FA8"
                         android:fontFamily="monospace"
-                        android:textSize="10sp"
+                        android:textSize="9sp"
                         android:textIsSelectable="true" />
                 </ScrollView>
             </FrameLayout>
@@ -543,25 +693,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingLeft="12dp"
-            android:paddingStart="12dp"
-            android:paddingRight="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="12dp">
+            android:padding="12dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SAVED SESSIONS"
-                android:textColor="#7A93B8"
-                android:textSize="10.5sp"
+                android:textColor="#5A7099"
+                android:textSize="9.5sp"
                 android:layout_marginBottom="4dp" />
 
             <ScrollView
                 android:id="@+id/sessionsScroll"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
-                android:background="#0D1420">
+                android:background="#0A0E14">
 
                 <LinearLayout
                     android:id="@+id/sessionsList"
@@ -581,18 +727,18 @@
 
     <LinearLayout
         android:id="@+id/drawerView"
-        android:layout_width="230dp"
+        android:layout_width="220dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#0D1420"
+        android:background="#0A0E14"
         android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="NAVIGATE"
-            android:textColor="#7A93B8"
-            android:textSize="11sp"
+            android:textColor="#5A7099"
+            android:textSize="10sp"
             android:textStyle="bold"
             android:padding="16dp"
             android:paddingBottom="8dp" />
@@ -612,15 +758,15 @@
                 android:layout_height="wrap_content"
                 android:text="MAIN APP"
                 android:textColor="#3D6FA8"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="scope + frequency controls"
-                android:textColor="#7A93B8"
-                android:textSize="10sp"
+                android:textColor="#5A7099"
+                android:textSize="9sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
@@ -639,15 +785,15 @@
                 android:layout_height="wrap_content"
                 android:text="LOGBOOK"
                 android:textColor="#BFD4EE"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="timestamped session files"
-                android:textColor="#7A93B8"
-                android:textSize="10sp"
+                android:textColor="#5A7099"
+                android:textSize="9sp"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>
