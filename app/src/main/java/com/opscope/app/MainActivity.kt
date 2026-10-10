@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sessionLogger: SessionLogger
 
     private val ACTION_USB_PERMISSION = "com.opscope.app.USB_PERMISSION"
-    private val BAUD_RATE = 250000
+    private val BAUD_RATE = 921600
 
     private val handler = Handler(Looper.getMainLooper())
     private var readThread: Thread? = null
@@ -142,13 +142,9 @@ class MainActivity : AppCompatActivity() {
     private var repeatDirection = 0
     private var sweepStartFreq = 0.0
 
-    private var liveCapture = false
-    private var capturing = false
-    private var capRate = 0.0
-    private var capSamples: IntArray? = null
-    private var capIsReal = false
-    private var capInFlight = false
-    private var lastCapDurationMs = 400L
+    // live stream: streamWanted = what the user wants (C button), sent as W1/W0
+    private var streamWanted = false
+    private var startupSent = false
 
     private val pendingLogbookLines = StringBuilder()
     private var logbookFlushScheduled = false
@@ -158,7 +154,6 @@ class MainActivity : AppCompatActivity() {
     private var minMeasuredHz: Double? = null
 
     private var lastErrWarnMs = 0L
-    private var lastCaptureLabel: String? = null
     private var lastShownText = ""
     private var lastShownMs = 0L
     private var dialDragging = false
@@ -181,15 +176,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val liveCaptureLoop = object : Runnable {
+    // Opening the USB port resets the ESP32, so commands sent right away can be lost.
+    // They are sent again when the ESP32 says it is ready, and on a timer as backup.
+    private val startupRunnable = Runnable { sendStartupCommands() }
+
+    // Twice a second: refresh voltage, LIVE/WAITING chip and the "no data" label.
+    private val uiTick = object : Runnable {
         override fun run() {
-            if (!liveCapture) return
-            if (!capturing && !capInFlight) {
-                capInFlight = true
-                sessionLogger.log("TX", "C")
-                serial?.writeLine("C")
+            val fresh = isConnected && scopeView.lastDataMs != 0L &&
+                SystemClock.elapsedRealtime() - scopeView.lastDataMs < 1500L
+            if (fresh) {
+                rVoltage.text = String.format(Locale.US, "%.2fV", scopeView.avgCounts / 4095.0 * 3.3)
             }
-            handler.postDelayed(this, lastCapDurationMs.coerceAtLeast(400L) + 60L)
+            captureChip.text = if (fresh) "LIVE" else "WAITING"
+            scopeView.postInvalidate()
+            handler.postDelayed(this, 500L)
         }
     }
 
@@ -319,16 +320,14 @@ class MainActivity : AppCompatActivity() {
         setupDrawer()
 
         updateFreqDisplay()
+        handler.post(uiTick)
         styleModeButtons("real")
         styleLockButton()
         styleProtection()
         styleConnState()
 
-        // --- FIX: every button that doesn't get its own styling function
-        // (H/M/D/C/S commands, the nudge row, and the two "Set" buttons)
-        // was falling back to MaterialButton's default solid-blue fill,
-        // since android:background alone is ignored by MaterialButton.
-        // Give them all the same flat black-bg/blue-border look explicitly.
+        // Every button that doesn't get its own styling function
+        // gets the same flat black-bg/blue-border look explicitly.
         styleToggle(btnCmdH, false)
         styleToggle(btnCmdM, false)
         styleToggle(btnCmdD, false)
@@ -346,7 +345,6 @@ class MainActivity : AppCompatActivity() {
         styleToggle(manualDutySetBtn, false)
         styleToggle(clearLogBtn, false)
         styleToggle(resetBtn, false)
-        // --- end fix ---
 
         appendLog("OPscope ready. Output stays off until Connect.", "info")
     }
@@ -384,16 +382,13 @@ class MainActivity : AppCompatActivity() {
 
         btnCmdC.setOnClickListener {
             if (!requireConnected()) return@setOnClickListener
-            liveCapture = !liveCapture
-            styleToggle(btnCmdC, liveCapture)
-            if (liveCapture) {
-                lastCaptureLabel = null
-                appendLog("Live capture ON.", "ok")
-                handler.post(liveCaptureLoop)
-            } else {
-                appendLog("Live capture OFF.", "info")
-            }
-            sessionLogger.log("APP", if (liveCapture) "live capture ON" else "live capture OFF")
+            streamWanted = !streamWanted
+            styleToggle(btnCmdC, streamWanted)
+            val cmd = if (streamWanted) "W1" else "W0"
+            sessionLogger.log("TX", cmd)
+            serial?.writeLine(cmd)
+            appendLog(if (streamWanted) "Live stream ON." else "Live stream OFF.", if (streamWanted) "ok" else "info")
+            sessionLogger.log("APP", if (streamWanted) "live stream ON" else "live stream OFF")
         }
 
         btnCmdM.setOnClickListener {
@@ -753,11 +748,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendFrequency() {
+        scopeView.targetFreqHz = outputFrequency
         val command = String.format(Locale.US, "F%.2f", outputFrequency)
         lastFreqTxMs = SystemClock.elapsedRealtime()
         lastSentFreq = outputFrequency
         sessionLogger.log("TX", command)
         serial?.writeLine(command)
+    }
+
+    // Enable + frequency + stream. Safe to repeat (the ESP32 just applies them again).
+    private fun sendStartupCommands() {
+        if (!isConnected) return
+        sessionLogger.log("TX", "E1")
+        serial?.writeLine("E1")
+        sendFrequency()
+        if (!startupSent) {
+            startupSent = true
+            streamWanted = true
+            styleToggle(btnCmdC, true)
+            appendLog("Live stream ON.", "ok")
+        }
+        if (streamWanted) {
+            sessionLogger.log("TX", "W1")
+            serial?.writeLine("W1")
+        }
     }
 
     private fun requestDevice() {
@@ -785,6 +799,9 @@ class MainActivity : AppCompatActivity() {
             }
             serial = manager
             isConnected = true
+            startupSent = false
+            streamWanted = false
+            scopeView.clearCapture()
             maxMeasuredHz = null
             minMeasuredHz = null
             sessionLogger.startSession("${deviceDesc(device)} @ $BAUD_RATE baud")
@@ -799,6 +816,10 @@ class MainActivity : AppCompatActivity() {
             sendFrequency()
             styleConnState()
             updateFreqDisplay()
+
+            handler.removeCallbacks(startupRunnable)
+            handler.postDelayed(startupRunnable, 1500L)
+            handler.postDelayed(startupRunnable, 3000L)
         } catch (e: Exception) {
             serial = null
             isConnected = false
@@ -829,7 +850,7 @@ class MainActivity : AppCompatActivity() {
                             if (newlineIndex < 0) break
                             val line = lineBuilder.substring(0, newlineIndex).trim()
                             lineBuilder.delete(0, newlineIndex + 1)
-                            if (line.isNotEmpty()) batch.add(line)
+                            if (line.isNotEmpty() && !handleStreamLine(line)) batch.add(line)
                         }
                         if (batch.isNotEmpty()) {
                             handler.post { for (line in batch) processSerialLine(line) }
@@ -847,18 +868,50 @@ class MainActivity : AppCompatActivity() {
         readThread?.start()
     }
 
+    private val streamHeader = Regex("W(\\d{1,6}):")
+    private val streamBuf = IntArray(256)
+
+    // Stream block: "W<rate>:" + 2 chars per sample. Runs on the read thread and
+    // feeds the scope directly, so the UI thread never sees sample data.
+    // Returns true if the line was a stream block.
+    private fun handleStreamLine(line: String): Boolean {
+        if (line.length < 10) return false
+        val m = streamHeader.find(line) ?: return false
+        val rate = m.groupValues[1].toDoubleOrNull() ?: return false
+        val start = m.range.last + 1
+        val chars = line.length - start
+        if (chars < 2 || chars % 2 != 0 || chars / 2 > streamBuf.size) return false
+        val n = chars / 2
+        for (i in 0 until n) {
+            val a = line[start + 2 * i].code - 48
+            val b = line[start + 2 * i + 1].code - 48
+            if (a < 0 || a > 63 || b < 0 || b > 63) return false
+            streamBuf[i] = (a shl 6) or b
+        }
+        scopeView.feed(streamBuf, n, rate)
+        return true
+    }
+
     private fun processSerialLine(line: String) {
-        val text = line.trim()
+        var text = line.trim()
         if (text.isEmpty()) return
 
-        if (capturing && text.matches(Regex("^[0-9,]+$")) && text.length > 120) {
-            sessionLogger.log("RX", text.substring(0, 120) + " …(sample data, ${text.length} chars total)")
-        } else {
-            sessionLogger.log("RX", text)
-        }
+        // Boot garbage bytes can sit in front of a real message; cut them off.
+        val aiIdx = text.indexOf("AI>")
+        if (aiIdx > 0) text = text.substring(aiIdx)
+
+        sessionLogger.log("RX", text)
 
         if (text.startsWith("AI>")) {
             val lower = text.lowercase(Locale.US)
+
+            // ESP32 just (re)booted: send enable + frequency + stream start again.
+            if (lower.contains("opscope esp32 ready")) {
+                outputEnabled = true
+                updateOutputBadge()
+                sendStartupCommands()
+            }
+
             when {
                 lower.contains("fault") && lower.contains("detected") -> {
                     protectionTripped = true
@@ -877,28 +930,6 @@ class MainActivity : AppCompatActivity() {
             }
             if (!dialDragging) showOnce(text, "info")
             return
-        }
-
-        if (text.startsWith("CAP,")) {
-            val parts = text.split(",")
-            capRate = parts.getOrNull(2)?.toDoubleOrNull() ?: parts.getOrNull(1)?.toDoubleOrNull() ?: 0.0
-            capIsReal = parts.getOrNull(3)?.trim()?.uppercase(Locale.US)?.let { it == "REAL" } ?: true
-            if (!capIsReal) {
-                capturing = false; capSamples = null
-                appendLog("ESP32 sent a non-REAL capture; ignored.", "warn")
-                return
-            }
-            capturing = true; capSamples = null
-            return
-        }
-        if (capturing) {
-            if (text == "ENDCAP") { capturing = false; onCaptureComplete(); return }
-            if (text.matches(Regex("^[0-9,]+$"))) {
-                val arr = text.split(",").mapNotNull { it.trim().toIntOrNull() }.toIntArray()
-                val prev = capSamples
-                capSamples = if (prev == null) arr else prev.plus(arr)
-                return
-            }
         }
 
         if (text.startsWith("Target:")) {
@@ -931,36 +962,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onCaptureComplete() {
-        capInFlight = false
-        val samples = capSamples ?: return
-        if (!capIsReal) return
-        if (capRate > 0 && samples.isNotEmpty()) {
-            lastCapDurationMs = (1000.0 * samples.size / capRate).toLong().coerceIn(50L, 500L)
-        }
-        if (samples.isNotEmpty()) {
-            val maxAdc = if (samples.max() > 1023) 4095.0 else 1023.0
-            val avgV = (samples.average() / maxAdc) * 3.3
-            rVoltage.text = String.format(Locale.US, "%.2fV", avgV)
-        }
-        val label = "${samples.size} smp @ ${String.format(Locale.US, "%.0f", capRate)}Hz"
-        sessionLogger.log("APP", "capture done: $label")
-        if (!liveCapture || label != lastCaptureLabel) {
-            lastCaptureLabel = label
-            appendLog("Capture: $label", "ok")
-        }
-        captureChip.text = "LIVE"
-        scopeView.showCaptured(samples, "REAL ADC · $label", capRate)
-    }
-
     private fun disconnect(reason: String) {
         val wasConnected = isConnected
         keepReading = false
         repeatDirection = 0
-        liveCapture = false
-        capturing = false
-        capInFlight = false
+        streamWanted = false
+        startupSent = false
         handler.removeCallbacks(repeatRunnable)
+        handler.removeCallbacks(startupRunnable)
         styleToggle(btnCmdC, false)
         styleToggle(btnCmdM, false)
         styleToggle(btnCmdD, false)
@@ -971,6 +980,8 @@ class MainActivity : AppCompatActivity() {
 
         if (wasConnected) {
             try {
+                sessionLogger.log("TX", "W0")
+                serial?.writeLine("W0")
                 sessionLogger.log("TX", "E0")
                 serial?.writeLine("E0")
             } catch (_: Exception) {}
@@ -1012,92 +1023,4 @@ class MainActivity : AppCompatActivity() {
 
     private fun showOnce(text: String, kind: String, gapMs: Long = 2000L) {
         val now = SystemClock.elapsedRealtime()
-        if (text == lastShownText && now - lastShownMs < gapMs) return
-        lastShownText = text
-        lastShownMs = now
-        appendLog(text.removePrefix("AI>").trim(), kind)
-    }
-
-    private fun styleModeButtons(selected: String) {
-        val buttons = listOf("real" to coarseModeBtn, "precise" to fineModeBtn, "fast" to precisionBtn)
-        for ((key, button) in buttons) {
-            val isSelected = key == selected
-            val shape = GradientDrawable().apply {
-                setColor(Color.TRANSPARENT)
-                setStroke(if (isSelected) 3 else 1, if (isSelected) Color.parseColor("#4A90FF") else Color.parseColor("#2C4A72"))
-                cornerRadius = 8f
-            }
-            val rippleColor = ColorStateList.valueOf(Color.parseColor("#663D6FA8"))
-            button.background = RippleDrawable(rippleColor, shape, shape)
-            button.setTextColor(Color.parseColor("#4A90FF"))
-        }
-    }
-
-    // Shared black-bg/blue-border look used by every plain button in the app.
-    // on=true gives the bolder/lit "pressed-and-held" look (used for latched
-    // toggles like C/M/D, the active speed, and as the base look for L/REAL/etc
-    // via their own styling functions which follow the same pattern).
-    private fun styleToggle(button: Button, on: Boolean) {
-        val shape = GradientDrawable().apply {
-            setColor(if (on) Color.parseColor("#14284A") else Color.TRANSPARENT)
-            setStroke(2, if (on) Color.parseColor("#6AAAFF") else Color.parseColor("#2C4A72"))
-            cornerRadius = 8f
-        }
-        val rippleColor = ColorStateList.valueOf(Color.parseColor("#663D6FA8"))
-        button.background = RippleDrawable(rippleColor, shape, shape)
-        button.setTextColor(if (on) Color.parseColor("#8FBBFF") else Color.parseColor("#4A90FF"))
-    }
-
-    private fun styleLockButton() {
-        val shape = GradientDrawable().apply {
-            setColor(if (isLocked) Color.parseColor("#2A1010") else Color.TRANSPARENT)
-            setStroke(2, if (isLocked) Color.parseColor("#FF6666") else Color.parseColor("#2C4A72"))
-            cornerRadius = 8f
-        }
-        val rippleColor = ColorStateList.valueOf(Color.parseColor("#66FF6666"))
-        lockBtn.background = RippleDrawable(rippleColor, shape, shape)
-        lockBtn.setTextColor(if (isLocked) Color.parseColor("#FF6666") else Color.parseColor("#4A90FF"))
-        lockStatusText.text = if (isLocked) "L · LOCKED" else "L · UNLOCKED"
-        lockStatusText.setTextColor(if (isLocked) Color.parseColor("#FF6666") else Color.parseColor("#3AC8A0"))
-    }
-
-    private fun styleConnState() {
-        val shape = GradientDrawable().apply {
-            setColor(if (isConnected) Color.parseColor("#0E2A1F") else Color.TRANSPARENT)
-            setStroke(2, if (isConnected) Color.parseColor("#3AC8A0") else Color.parseColor("#2C4A72"))
-            cornerRadius = 8f
-        }
-        connectBtn.background = shape
-        connectBtn.text = if (isConnected) "DISCONNECT" else "CONNECT"
-        connectBtn.setTextColor(if (isConnected) Color.parseColor("#3AC8A0") else Color.parseColor("#4A90FF"))
-        connStatus.text = if (isConnected) "USB session active" else "No active session"
-        connStatus.setTextColor(if (isConnected) Color.parseColor("#7FA6D9") else Color.parseColor("#6B7686"))
-        streamText.text = if (isConnected) "STREAMING FROM ESP32" else "NOT CONNECTED"
-        streamText.setTextColor(if (isConnected) Color.parseColor("#3AA0C8") else Color.parseColor("#4A5568"))
-    }
-
-    private fun styleProtection() {
-        if (protectionTripped) {
-            protStrip.setBackgroundColor(Color.parseColor("#1A0A0A"))
-            protTitle.text = "PROTECTION TRIPPED"
-            protTitle.setTextColor(Color.parseColor("#FF6B6B"))
-            protSub.text = "Output cut — press RESET to recover"
-            protSub.setTextColor(Color.parseColor("#B07070"))
-        } else {
-            protStrip.setBackgroundColor(Color.parseColor("#07160F"))
-            protTitle.text = "PROTECTION CLEAR"
-            protTitle.setTextColor(Color.parseColor("#3AC8A0"))
-            protSub.text = "Reverse / over-voltage guard armed"
-            protSub.setTextColor(Color.parseColor("#6FA08E"))
-        }
-    }
-
-    override fun onDestroy() {
-        repeatDirection = 0
-        handler.removeCallbacks(repeatRunnable)
-        keepReading = false
-        try { unregisterReceiver(usbReceiver) } catch (_: Exception) {}
-        disconnect("app closed")
-        super.onDestroy()
-    }
-}
+        if (text == lastShownText && now - lastShownMs < gapM
