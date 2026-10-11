@@ -35,139 +35,139 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var usbManager: UsbManager
-    private var serial: UsbSerialManager? = null
+    lateinit var usbManager: UsbManager
+    var serial: UsbSerialManager? = null
 
-    private lateinit var scopeView: ScopeView
-    private lateinit var dialView: DialView
+    lateinit var scopeView: ScopeView
+    lateinit var dialView: DialView
 
-    private lateinit var slideRoot: SlideFrameLayout
-    private lateinit var mainPage: View
-    private lateinit var logbookPage: View
-    private lateinit var scrimView: View
-    private lateinit var drawerView: View
-    private lateinit var menuBtnMain: View
-    private lateinit var menuBtnLog: View
-    private lateinit var drawerMainOpt: LinearLayout
-    private lateinit var drawerLogOpt: LinearLayout
+    lateinit var slideRoot: SlideFrameLayout
+    lateinit var mainPage: View
+    lateinit var logbookPage: View
+    lateinit var scrimView: View
+    lateinit var drawerView: View
+    lateinit var menuBtnMain: View
+    lateinit var menuBtnLog: View
+    lateinit var drawerMainOpt: LinearLayout
+    lateinit var drawerLogOpt: LinearLayout
 
-    private lateinit var liveBtn: Button
-    private lateinit var refreshFilesBtn: Button
-    private lateinit var viewerTitle: TextView
-    private lateinit var logbookView: TextView
-    private lateinit var logbookScroll: ScrollView
-    private lateinit var sessionsList: LinearLayout
+    lateinit var liveBtn: Button
+    lateinit var refreshFilesBtn: Button
+    lateinit var viewerTitle: TextView
+    lateinit var logbookView: TextView
+    lateinit var logbookScroll: ScrollView
+    lateinit var sessionsList: LinearLayout
 
-    private lateinit var connStatus: TextView
-    private lateinit var connectBtn: Button
-    private lateinit var captureChip: TextView
-    private lateinit var streamText: TextView
+    lateinit var connStatus: TextView
+    lateinit var connectBtn: Button
+    lateinit var captureChip: TextView
+    lateinit var streamText: TextView
 
-    private lateinit var zoomInBtn: View
-    private lateinit var zoomOutBtn: View
-    private lateinit var resetZoomBtn: View
+    lateinit var zoomInBtn: View
+    lateinit var zoomOutBtn: View
+    lateinit var resetZoomBtn: View
 
-    private lateinit var logView: TextView
-    private lateinit var clearLogBtn: Button
+    lateinit var logView: TextView
+    lateinit var clearLogBtn: Button
 
-    private lateinit var rTarget: TextView
-    private lateinit var rTargetBig: TextView
-    private lateinit var rMeasured: TextView
-    private lateinit var rDuty: TextView
-    private lateinit var rMax: TextView
-    private lateinit var rMin: TextView
-    private lateinit var rError: TextView
-    private lateinit var rVoltage: TextView
-    private lateinit var lockStatusText: TextView
-    private lateinit var outStateBadge: TextView
-    private lateinit var pendText: TextView
+    lateinit var rTarget: TextView
+    lateinit var rTargetBig: TextView
+    lateinit var rMeasured: TextView
+    lateinit var rDuty: TextView
+    lateinit var rMax: TextView
+    lateinit var rMin: TextView
+    lateinit var rError: TextView
+    lateinit var rVoltage: TextView
+    lateinit var lockStatusText: TextView
+    lateinit var outStateBadge: TextView
+    lateinit var pendText: TextView
 
-    private lateinit var coarseModeBtn: Button
-    private lateinit var fineModeBtn: Button
-    private lateinit var precisionBtn: Button
-    private lateinit var lockBtn: Button
+    lateinit var coarseModeBtn: Button
+    lateinit var fineModeBtn: Button
+    lateinit var precisionBtn: Button
+    lateinit var lockBtn: Button
 
-    private lateinit var downFreqBtn: Button
-    private lateinit var upFreqBtn: Button
-    private lateinit var speed1xBtn: Button
-    private lateinit var speed2xBtn: Button
-    private lateinit var minus1Btn: Button
-    private lateinit var minus01Btn: Button
-    private lateinit var plus01Btn: Button
-    private lateinit var plus1Btn: Button
+    lateinit var downFreqBtn: Button
+    lateinit var upFreqBtn: Button
+    lateinit var speed1xBtn: Button
+    lateinit var speed2xBtn: Button
+    lateinit var minus1Btn: Button
+    lateinit var minus01Btn: Button
+    lateinit var plus01Btn: Button
+    lateinit var plus1Btn: Button
 
-    private lateinit var btnCmdH: Button
-    private lateinit var btnCmdM: Button
-    private lateinit var btnCmdD: Button
-    private lateinit var btnCmdC: Button
-    private lateinit var btnCmdS: Button
+    lateinit var btnCmdH: Button
+    lateinit var btnCmdM: Button
+    lateinit var btnCmdD: Button
+    lateinit var btnCmdC: Button
+    lateinit var btnCmdS: Button
 
-    private lateinit var manualFreqRow: LinearLayout
-    private lateinit var manualFreqInput: EditText
-    private lateinit var manualFreqSetBtn: Button
-    private lateinit var manualDutyRow: LinearLayout
-    private lateinit var manualDutyInput: EditText
-    private lateinit var manualDutySetBtn: Button
+    lateinit var manualFreqRow: LinearLayout
+    lateinit var manualFreqInput: EditText
+    lateinit var manualFreqSetBtn: Button
+    lateinit var manualDutyRow: LinearLayout
+    lateinit var manualDutyInput: EditText
+    lateinit var manualDutySetBtn: Button
 
-    private lateinit var protStrip: LinearLayout
-    private lateinit var protTitle: TextView
-    private lateinit var protSub: TextView
-    private lateinit var resetBtn: Button
+    lateinit var protStrip: LinearLayout
+    lateinit var protTitle: TextView
+    lateinit var protSub: TextView
+    lateinit var resetBtn: Button
 
-    private lateinit var sessionLogger: SessionLogger
+    lateinit var sessionLogger: SessionLogger
 
-    private val ACTION_USB_PERMISSION = "com.opscope.app.USB_PERMISSION"
-    private val BAUD_RATE = 921600
+    val ACTION_USB_PERMISSION = "com.opscope.app.USB_PERMISSION"
+    val BAUD_RATE = 921600
 
-    private val handler = Handler(Looper.getMainLooper())
-    private var readThread: Thread? = null
+    val handler = Handler(Looper.getMainLooper())
+    var readThread: Thread? = null
 
-    @Volatile private var keepReading = false
+    @Volatile var keepReading = false
 
-    private val F_MIN = 1.0
-    private val F_MAX = 20000.0
+    val F_MIN = 1.0
+    val F_MAX = 20000.0
 
     // outputFrequency: what's actually commanded to the ESP32.
     // dialPreview: wherever the dial / nudge controls currently sit (always tracks touch/taps).
     // While isLocked, dialPreview can move freely but outputFrequency does not.
-    private var outputFrequency = 1000.0
-    private var dialPreview = 1000.0
-    private var isLocked = false
+    var outputFrequency = 1000.0
+    var dialPreview = 1000.0
+    var isLocked = false
 
-    private var isConnected = false
-    private var outputEnabled = false
-    private var protectionTripped = false
+    var isConnected = false
+    var outputEnabled = false
+    var protectionTripped = false
 
-    private var arrowSpeed = 1
-    private var repeatDirection = 0
-    private var sweepStartFreq = 0.0
+    var arrowSpeed = 1
+    var repeatDirection = 0
+    var sweepStartFreq = 0.0
 
     // live stream: streamWanted = what the user wants (C button), sent as W1/W0
-    private var streamWanted = false
-    private var startupSent = false
+    var streamWanted = false
+    var startupSent = false
 
-    private val pendingLogbookLines = StringBuilder()
-    private var logbookFlushScheduled = false
-    private var lastMeasuredHz = 0.0
-    private var lastWaveform = false
-    private var maxMeasuredHz: Double? = null
-    private var minMeasuredHz: Double? = null
+    val pendingLogbookLines = StringBuilder()
+    var logbookFlushScheduled = false
+    var lastMeasuredHz = 0.0
+    var lastWaveform = false
+    var maxMeasuredHz: Double? = null
+    var minMeasuredHz: Double? = null
 
-    private var lastErrWarnMs = 0L
-    private var lastShownText = ""
-    private var lastShownMs = 0L
-    private var dialDragging = false
+    var lastErrWarnMs = 0L
+    var lastShownText = ""
+    var lastShownMs = 0L
+    var dialDragging = false
 
-    private var lastSentFreq = 1000.0
-    private var lastFreqTxMs = 0L
+    var lastSentFreq = 1000.0
+    var lastFreqTxMs = 0L
 
-    private var currentScreen = 0
-    private var drawerOpen = false
-    private var drawerAnimating = false
-    private var logbookIsLive = true
-    private var drawerDownX = 0f
+    var currentScreen = 0
+    var drawerOpen = false
+    var drawerAnimating = false
+    var logbookIsLive = true
+    var drawerDownX = 0f
 
-    private val repeatRunnable = object : Runnable {
+    val repeatRunnable = object : Runnable {
         override fun run() {
             if (repeatDirection == 0) return
             changeFrequencyFromArrow()
@@ -178,10 +178,10 @@ class MainActivity : AppCompatActivity() {
 
     // Opening the USB port resets the ESP32, so commands sent right away can be lost.
     // They are sent again when the ESP32 says it is ready, and on a timer as backup.
-    private val startupRunnable = Runnable { sendStartupCommands() }
+    val startupRunnable = Runnable { sendStartupCommands() }
 
     // Twice a second: refresh voltage, LIVE/WAITING chip and the "no data" label.
-    private val uiTick = object : Runnable {
+    val uiTick = object : Runnable {
         override fun run() {
             val fresh = isConnected && scopeView.lastDataMs != 0L &&
                 SystemClock.elapsedRealtime() - scopeView.lastDataMs < 1500L
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val usbReceiver = object : BroadcastReceiver() {
+    val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 ACTION_USB_PERMISSION -> {
@@ -326,8 +326,8 @@ class MainActivity : AppCompatActivity() {
         styleProtection()
         styleConnState()
 
-        // Every button that doesn't get its own styling function
-        // gets the same flat black-bg/blue-border look explicitly.
+        // Every button without its own styling function gets the same
+        // flat black-bg/blue-border look explicitly.
         styleToggle(btnCmdH, false)
         styleToggle(btnCmdM, false)
         styleToggle(btnCmdD, false)
@@ -349,7 +349,7 @@ class MainActivity : AppCompatActivity() {
         appendLog("OPscope ready. Output stays off until Connect.", "info")
     }
 
-    private fun setupUsbReceiver() {
+    fun setupUsbReceiver() {
         val filter = IntentFilter().apply {
             addAction(ACTION_USB_PERMISSION)
             addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
@@ -363,391 +363,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupButtons() {
-        connectBtn.setOnClickListener {
-            if (isConnected) disconnect("user requested") else requestDevice()
-        }
-
-        clearLogBtn.setOnClickListener { logView.text = "" }
-
-        liveBtn.setOnClickListener {
-            logbookIsLive = true
-            viewerTitle.text = "Live session"
-            logbookScroll.post { logbookScroll.fullScroll(View.FOCUS_DOWN) }
-        }
-        refreshFilesBtn.setOnClickListener { refreshSessionList() }
-
-        btnCmdH.setOnClickListener { fireSimpleCommand("H", "AI> help requested") }
-        btnCmdS.setOnClickListener { fireSimpleCommand("S", "AI> diagnostics requested") }
-
-        btnCmdC.setOnClickListener {
-            if (!requireConnected()) return@setOnClickListener
-            streamWanted = !streamWanted
-            styleToggle(btnCmdC, streamWanted)
-            val cmd = if (streamWanted) "W1" else "W0"
-            sessionLogger.log("TX", cmd)
-            serial?.writeLine(cmd)
-            appendLog(if (streamWanted) "Live stream ON." else "Live stream OFF.", if (streamWanted) "ok" else "info")
-            sessionLogger.log("APP", if (streamWanted) "live stream ON" else "live stream OFF")
-        }
-
-        btnCmdM.setOnClickListener {
-            if (!requireConnected()) return@setOnClickListener
-            manualDutyRow.visibility = View.GONE
-            styleToggle(btnCmdD, false)
-            val show = manualFreqRow.visibility != View.VISIBLE
-            manualFreqRow.visibility = if (show) View.VISIBLE else View.GONE
-            styleToggle(btnCmdM, show)
-            if (show) {
-                manualFreqInput.setText(String.format(Locale.US, "%.2f", dialPreview))
-                manualFreqInput.requestFocus()
-            }
-        }
-        manualFreqSetBtn.setOnClickListener { submitManualFrequency() }
-        manualFreqInput.setOnEditorActionListener { _, _, _ -> submitManualFrequency(); true }
-
-        btnCmdD.setOnClickListener {
-            if (!requireConnected()) return@setOnClickListener
-            manualFreqRow.visibility = View.GONE
-            styleToggle(btnCmdM, false)
-            val show = manualDutyRow.visibility != View.VISIBLE
-            manualDutyRow.visibility = if (show) View.VISIBLE else View.GONE
-            styleToggle(btnCmdD, show)
-            if (show) manualDutyInput.requestFocus()
-        }
-        manualDutySetBtn.setOnClickListener { submitManualDuty() }
-        manualDutyInput.setOnEditorActionListener { _, _, _ -> submitManualDuty(); true }
-
-        zoomInBtn.setOnClickListener { scopeView.zoomIn() }
-        zoomOutBtn.setOnClickListener { scopeView.zoomOut() }
-        resetZoomBtn.setOnClickListener { scopeView.resetZoom() }
-
-        coarseModeBtn.setOnClickListener {
-            dialView.scaleMode = "linear"
-            dialView.setFrequency(dialPreview)
-            styleModeButtons("real")
-        }
-        fineModeBtn.setOnClickListener {
-            dialView.scaleMode = "log"
-            dialView.setFrequency(dialPreview)
-            styleModeButtons("precise")
-        }
-        precisionBtn.setOnClickListener {
-            dialView.scaleMode = "precision"
-            dialView.setFrequency(dialPreview)
-            styleModeButtons("fast")
-        }
-
-        lockBtn.setOnClickListener {
-            isLocked = !isLocked
-            dialView.isLocked = isLocked
-            if (!isLocked && Math.abs(dialPreview - outputFrequency) > 0.004) {
-                outputFrequency = dialPreview
-                updateFreqDisplay()
-                sendFrequency()
-                appendLog("L OFF · applied ${String.format(Locale.US, "%.2f Hz", outputFrequency)}", "ok")
-            } else {
-                appendLog(if (isLocked) "L ON · output held, dial/nudges ignored" else "L OFF · unlocked", "warn")
-            }
-            styleLockButton()
-            updateFreqDisplay()
-            sessionLogger.log("APP", if (isLocked) "frequency lock ON" else "frequency lock OFF")
-        }
-
-        resetBtn.setOnClickListener {
-            if (!requireConnected()) return@setOnClickListener
-            sessionLogger.log("TX", "H")
-            serial?.writeLine("H")
-            appendLog("Reset sent (H).", "info")
-        }
-
-        speed1xBtn.setOnClickListener { arrowSpeed = 1; styleToggle(speed1xBtn, true); styleToggle(speed2xBtn, false) }
-        speed2xBtn.setOnClickListener { arrowSpeed = 2; styleToggle(speed2xBtn, true); styleToggle(speed1xBtn, false) }
-
-        minus1Btn.setOnClickListener { nudgeFrequency(-1.0) }
-        minus01Btn.setOnClickListener { nudgeFrequency(-0.1) }
-        plus01Btn.setOnClickListener { nudgeFrequency(0.1) }
-        plus1Btn.setOnClickListener { nudgeFrequency(1.0) }
-
-        setupArrowButton(downFreqBtn, -1)
-        setupArrowButton(upFreqBtn, 1)
-    }
-
-    private fun setupArrowButton(button: Button, direction: Int) {
-        button.setOnTouchListener { _, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    repeatDirection = direction
-                    sweepStartFreq = dialPreview
-                    changeFrequencyFromArrow()
-                    handler.removeCallbacks(repeatRunnable)
-                    handler.postDelayed(repeatRunnable, 250L)
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    repeatDirection = 0
-                    handler.removeCallbacks(repeatRunnable)
-                    true
-                }
-                else -> true
-            }
-        }
-    }
-
-    private fun changeFrequencyFromArrow() {
-        val step = if (arrowSpeed == 1) 1.0 else 5.0
-        applyFrequencyChange((dialPreview + repeatDirection * step).coerceIn(F_MIN, F_MAX))
-    }
-
-    private fun nudgeFrequency(amount: Double) {
-        applyFrequencyChange((dialPreview + amount).coerceIn(F_MIN, F_MAX))
-        sessionLogger.log("APP", "nudge ${if (amount > 0) "+" else ""}$amount")
-    }
-
-    // Shared by dial, nudge buttons and arrow-hold: moves the preview, and
-    // only pushes to outputFrequency / the ESP32 when not locked.
-    private fun applyFrequencyChange(newPreview: Double) {
-        dialPreview = newPreview
-        dialView.setFrequency(dialPreview)
-        if (!isLocked) {
-            outputFrequency = dialPreview
-            throttledFrequencySend()
-        }
-        updateFreqDisplay()
-    }
-
-    private fun requireConnected(): Boolean {
-        if (!isConnected) {
-            appendLog("Choose a transport and connect first.", "err")
-            return false
-        }
-        return true
-    }
-
-    private fun fireSimpleCommand(cmd: String, logMsg: String) {
-        if (!requireConnected()) return
-        sessionLogger.log("TX", cmd)
-        serial?.writeLine(cmd)
-        appendLog(logMsg, "info")
-    }
-
-    private fun submitManualFrequency() {
-        val value = manualFreqInput.text.toString().trim().toDoubleOrNull()
-        if (value == null) {
-            appendLog("Enter a valid frequency first.", "err")
-            return
-        }
-        val clamped = value.coerceIn(F_MIN, F_MAX)
-        applyFrequencyChange(clamped)
-        if (isLocked) {
-            appendLog("Frequency staged at ${String.format(Locale.US, "%.2f Hz", clamped)} — unlock (L) to apply.", "warn")
-        } else {
-            sendFrequency()
-        }
-        manualFreqRow.visibility = View.GONE
-        styleToggle(btnCmdM, false)
-    }
-
-    private fun submitManualDuty() {
-        val value = manualDutyInput.text.toString().trim().toDoubleOrNull()
-        if (value == null) {
-            appendLog("Enter a valid duty percentage first.", "err")
-            return
-        }
-        val clamped = value.coerceIn(0.0, 100.0)
-        val command = String.format(Locale.US, "P%.1f", clamped)
-        sessionLogger.log("TX", command)
-        serial?.writeLine(command)
-        appendLog("Duty set → ${String.format(Locale.US, "%.1f%%", clamped)}", "info")
-        manualDutyRow.visibility = View.GONE
-        styleToggle(btnCmdD, false)
-    }
-
-    private fun setupDial() {
-        dialView.onFrequency = { f ->
-            dialDragging = true
-            applyFrequencyChange(f)
-        }
-        dialView.onCommit = { f ->
-            dialDragging = false
-            applyFrequencyChange(f)
-            if (!isLocked && Math.abs(f - lastSentFreq) > 0.0049) {
-                sendFrequency()
-                sessionLogger.log("APP", "dial → ${String.format(Locale.US, "%.2f Hz", f)}")
-            } else if (isLocked) {
-                sessionLogger.log("APP", "dial moved to ${String.format(Locale.US, "%.2f Hz", f)} while locked (ignored)")
-            }
-        }
-    }
-
-    private fun setupDrawer() {
-        slideRoot.onLeftEdgeSwipe = { openDrawer() }
-        menuBtnMain.setOnClickListener { openDrawer() }
-        menuBtnLog.setOnClickListener { openDrawer() }
-        scrimView.setOnClickListener { closeDrawer() }
-        drawerMainOpt.setOnClickListener { goMain() }
-        drawerLogOpt.setOnClickListener { goLogbook() }
-        drawerView.setOnTouchListener { _, e ->
-            when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> drawerDownX = e.x
-                MotionEvent.ACTION_UP -> if (e.x - drawerDownX > 120f) closeDrawer()
-            }
-            false
-        }
-    }
-
-    private fun drawerWidth(): Float =
-        if (drawerView.width > 0) drawerView.width.toFloat()
-        else (220f * resources.displayMetrics.density)
-
-    private fun openDrawer() {
-        if (drawerOpen || drawerAnimating) return
-        drawerAnimating = true
-        updateDrawerHighlight()
-        scrimView.visibility = View.VISIBLE
-        drawerView.visibility = View.VISIBLE
-        drawerView.translationX = -drawerWidth()
-        drawerView.animate().translationX(0f).setDuration(200).withEndAction {
-            drawerAnimating = false; drawerOpen = true
-        }.start()
-    }
-
-    private fun closeDrawer() {
-        if (!drawerOpen || drawerAnimating) return
-        drawerAnimating = true
-        scrimView.visibility = View.GONE
-        drawerView.animate().translationX(-drawerWidth()).setDuration(200).withEndAction {
-            drawerView.visibility = View.GONE; drawerAnimating = false; drawerOpen = false
-        }.start()
-    }
-
-    private fun goMain() {
-        if (currentScreen != 0) {
-            currentScreen = 0
-            logbookPage.visibility = View.GONE
-            mainPage.visibility = View.VISIBLE
-        }
-        closeDrawer()
-    }
-
-    private fun goLogbook() {
-        if (currentScreen != 1) {
-            currentScreen = 1
-            mainPage.visibility = View.GONE
-            logbookPage.visibility = View.VISIBLE
-            refreshSessionList()
-        }
-        closeDrawer()
-    }
-
-    private fun updateDrawerHighlight() {
-        val activeBg = 0xFF122038.toInt(); val idleBg = 0x00000000
-        val activeColor = 0xFF3D6FA8.toInt(); val idleColor = 0xFFBFD4EE.toInt()
-        val mainTitle = drawerMainOpt.getChildAt(0) as TextView
-        val logTitle = drawerLogOpt.getChildAt(0) as TextView
-        drawerMainOpt.setBackgroundColor(if (currentScreen == 0) activeBg else idleBg)
-        mainTitle.setTextColor(if (currentScreen == 0) activeColor else idleColor)
-        drawerLogOpt.setBackgroundColor(if (currentScreen == 1) activeBg else idleBg)
-        logTitle.setTextColor(if (currentScreen == 1) activeColor else idleColor)
-    }
-
-    private fun scheduleLogbookFlush() {
-        if (logbookFlushScheduled) return
-        logbookFlushScheduled = true
-        handler.postDelayed({ flushLogbookLines() }, 150L)
-    }
-
-    private fun flushLogbookLines() {
-        logbookFlushScheduled = false
-        val chunk: String
-        synchronized(pendingLogbookLines) {
-            if (pendingLogbookLines.isEmpty()) return
-            chunk = pendingLogbookLines.toString()
-            pendingLogbookLines.setLength(0)
-        }
-        if (!logbookIsLive) return
-        logbookView.append(chunk)
-        val s = logbookView.text.toString()
-        if (s.length > 200000) logbookView.setText(s.substring(s.length - 100000))
-        val child = logbookScroll.getChildAt(0) ?: return
-        val diff = child.bottom - (logbookScroll.height + logbookScroll.scrollY)
-        if (diff <= 200) logbookScroll.post { logbookScroll.fullScroll(View.FOCUS_DOWN) }
-    }
-
-    private fun refreshSessionList() {
-        sessionsList.removeAllViews()
-        val files = sessionLogger.listSessions()
-        if (files.isEmpty()) {
-            val t = makeRow("No saved sessions yet.")
-            t.setTextColor(0xFF5A7099.toInt())
-            sessionsList.addView(t)
-            return
-        }
-        val dateFmt = SimpleDateFormat("dd MMM yyyy · HH:mm:ss", Locale.US)
-        for (f in files) {
-            val t = makeRow("${f.name}\n${dateFmt.format(Date(f.lastModified()))} · ${f.length() / 1024} KB")
-            t.setTextColor(0xFFBFD4EE.toInt())
-            t.isClickable = true
-            t.setOnClickListener { openSessionFile(f) }
-            sessionsList.addView(t)
-        }
-    }
-
-    private fun makeRow(text: String): TextView {
-        val t = TextView(this)
-        t.text = text
-        t.textSize = 10.5f
-        t.typeface = Typeface.MONOSPACE
-        t.setPadding(16, 12, 16, 12)
-        return t
-    }
-
-    private fun openSessionFile(f: File) {
-        logbookIsLive = false
-        viewerTitle.text = f.name
-        logbookView.text = "Loading…"
-        Thread {
-            val text = try { f.readText() } catch (e: Exception) { "Failed to read: ${e.message}" }
-            val shown = if (text.length > 300000)
-                text.substring(0, 300000) + "\n\n…(truncated — ${text.length} chars total)"
-            else text
-            handler.post { logbookView.text = shown; logbookScroll.scrollTo(0, 0) }
-        }.start()
-    }
-
-    private fun updateFreqDisplay() {
-        rTargetBig.text = String.format(Locale.US, "%.2f Hz", outputFrequency)
-        rTarget.text = String.format(Locale.US, "%.2f Hz", outputFrequency)
-        pendText.text = if (isLocked && Math.abs(dialPreview - outputFrequency) > 0.004)
-            "DIAL → ${String.format(Locale.US, "%.2f Hz", dialPreview)} (applies on unlock)"
-        else ""
-        updateOutputBadge()
-    }
-
-    private fun updateOutputBadge() {
-        when {
-            protectionTripped -> {
-                outStateBadge.text = "CUT · PROTECTION"
-                outStateBadge.setTextColor(Color.parseColor("#FF6B6B"))
-            }
-            outputEnabled -> {
-                outStateBadge.text = "OUTPUT ON"
-                outStateBadge.setTextColor(Color.parseColor("#3AC8A0"))
-            }
-            else -> {
-                outStateBadge.text = "OUTPUT OFF"
-                outStateBadge.setTextColor(Color.parseColor("#8A97AD"))
-            }
-        }
-        rTargetBig.setTextColor(if (outputEnabled && !protectionTripped) Color.parseColor("#4A90FF") else Color.parseColor("#3A4E70"))
-    }
-
-    private fun throttledFrequencySend() {
-        val now = SystemClock.elapsedRealtime()
-        if (now - lastFreqTxMs >= 100L) sendFrequency()
-    }
-
-    private fun sendFrequency() {
+    fun sendFrequency() {
         scopeView.targetFreqHz = outputFrequency
         val command = String.format(Locale.US, "F%.2f", outputFrequency)
         lastFreqTxMs = SystemClock.elapsedRealtime()
@@ -757,7 +373,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Enable + frequency + stream. Safe to repeat (the ESP32 just applies them again).
-    private fun sendStartupCommands() {
+    fun sendStartupCommands() {
         if (!isConnected) return
         sessionLogger.log("TX", "E1")
         serial?.writeLine("E1")
@@ -774,7 +390,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requestDevice() {
+    fun requestDevice() {
         val devices = usbManager.deviceList.values
         if (devices.isEmpty()) { appendLog("No USB device found.", "err"); return }
         val device = devices.first()
@@ -787,7 +403,7 @@ class MainActivity : AppCompatActivity() {
         sessionLogger.log("SYS", "requesting USB permission for ${deviceDesc(device)}")
     }
 
-    private fun connectToDevice(device: UsbDevice) {
+    fun connectToDevice(device: UsbDevice) {
         try {
             val manager = UsbSerialManager(usbManager, device)
             val opened = manager.open(BAUD_RATE)
@@ -829,10 +445,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun deviceDesc(d: UsbDevice): String =
+    fun deviceDesc(d: UsbDevice): String =
         String.format(Locale.US, "USB %04X:%04X %s", d.vendorId, d.productId, d.deviceName)
 
-    private fun startReading() {
+    fun startReading() {
         if (keepReading) return
         keepReading = true
         readThread = Thread {
@@ -868,13 +484,13 @@ class MainActivity : AppCompatActivity() {
         readThread?.start()
     }
 
-    private val streamHeader = Regex("W(\\d{1,6}):")
-    private val streamBuf = IntArray(256)
+    val streamHeader = Regex("W(\\d{1,6}):")
+    val streamBuf = IntArray(256)
 
     // Stream block: "W<rate>:" + 2 chars per sample. Runs on the read thread and
     // feeds the scope directly, so the UI thread never sees sample data.
     // Returns true if the line was a stream block.
-    private fun handleStreamLine(line: String): Boolean {
+    fun handleStreamLine(line: String): Boolean {
         if (line.length < 10) return false
         val m = streamHeader.find(line) ?: return false
         val rate = m.groupValues[1].toDoubleOrNull() ?: return false
@@ -892,7 +508,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    private fun processSerialLine(line: String) {
+    fun processSerialLine(line: String) {
         var text = line.trim()
         if (text.isEmpty()) return
 
@@ -962,7 +578,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun disconnect(reason: String) {
+    fun disconnect(reason: String) {
         val wasConnected = isConnected
         keepReading = false
         repeatDirection = 0
@@ -1005,7 +621,7 @@ class MainActivity : AppCompatActivity() {
         updateFreqDisplay()
     }
 
-    private fun appendLog(message: String, kind: String) {
+    fun appendLog(message: String, kind: String) {
         handler.post {
             val color = when (kind) {
                 "err" -> Color.parseColor("#FF6B6B")
@@ -1021,6 +637,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showOnce(text: String, kind: String, gapMs: Long = 2000L) {
-        val now = SystemClock.elapsedRealtime()
-        if (text == lastShownText && now - lastShownMs < gapM
+    override fun onDestroy() {
+        repeatDirection = 0
+        handler.removeCallbacks(repeatRunnable)
+        handler.removeCallbacks(startupRunnable)
+        handler.removeCallbacks(uiTick)
+        keepReading = false
+        try { unregisterReceiver(usbReceiver) } catch (_: Exception) {}
+        disconnect("app closed")
+        super.onDestroy()
+    }
+}
