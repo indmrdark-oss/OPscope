@@ -161,6 +161,12 @@ class MainActivity : AppCompatActivity() {
     var lastSentFreq = 1000.0
     var lastFreqTxMs = 0L
 
+    // what the ESP32 says its target is (from the status line), and when
+    var espTarget = -1.0
+    var lastStatusRxMs = 0L
+    var connectedAtMs = 0L
+    var lastWatchdogMs = 0L
+
     var currentScreen = 0
     var drawerOpen = false
     var drawerAnimating = false
@@ -191,6 +197,32 @@ class MainActivity : AppCompatActivity() {
             captureChip.text = if (fresh) "LIVE" else "WAITING"
             scopeView.postInvalidate()
             handler.postDelayed(this, 500L)
+        }
+    }
+
+    // Every 100 ms: make sure the ESP32 really has the frequency the app shows,
+    // and restart the stream if it went quiet. Fixes lost / throttled commands.
+    val syncTick = object : Runnable {
+        override fun run() {
+            if (isConnected && startupSent) {
+                val now = SystemClock.elapsedRealtime()
+                if (!dialDragging || now - lastFreqTxMs > 250L) {
+                    val appHz = outputFrequency
+                    val unsent = Math.abs(appHz - lastSentFreq) > 0.004
+                    val mismatch = espTarget > 0 && Math.abs(espTarget - appHz) > 0.01 &&
+                        now - lastFreqTxMs > 700L && now - lastStatusRxMs < 1000L
+                    if (unsent || mismatch) sendFrequency()
+                }
+                val lastData = if (scopeView.lastDataMs != 0L) scopeView.lastDataMs else connectedAtMs
+                if (streamWanted && now - lastData > 1200L && now - lastWatchdogMs > 1500L) {
+                    lastWatchdogMs = now
+                    sessionLogger.log("TX", "E1/F/W1 (watchdog)")
+                    serial?.writeLine("E1")
+                    sendFrequency()
+                    serial?.writeLine("W1")
+                }
+            }
+            handler.postDelayed(this, 100L)
         }
     }
 
@@ -321,6 +353,7 @@ class MainActivity : AppCompatActivity() {
 
         updateFreqDisplay()
         handler.post(uiTick)
+        handler.post(syncTick)
         styleModeButtons("real")
         styleLockButton()
         styleProtection()
@@ -417,6 +450,8 @@ class MainActivity : AppCompatActivity() {
             isConnected = true
             startupSent = false
             streamWanted = false
+            espTarget = -1.0
+            connectedAtMs = SystemClock.elapsedRealtime()
             scopeView.clearCapture()
             maxMeasuredHz = null
             minMeasuredHz = null
@@ -485,13 +520,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     val streamHeader = Regex("W(\\d{1,6}):")
+    val frameHeader = Regex("Q(\\d{1,3}),(\\d{1,3}):")
     val streamBuf = IntArray(256)
 
-    // Stream block: "W<rate>:" + 2 chars per sample. Runs on the read thread and
-    // feeds the scope directly, so the UI thread never sees sample data.
-    // Returns true if the line was a stream block.
+    // Stream block: "W<rate>:" + 2 chars per sample, or "Q<n>,<m>:" + one folded
+    // period. Runs on the read thread and feeds the scope directly, so the UI
+    // thread never sees sample data. Returns true if the line was a stream block.
     fun handleStreamLine(line: String): Boolean {
         if (line.length < 10) return false
+        if (line[0] == 'Q' || line.indexOf('Q') in 0..3) {
+            val fm = frameHeader.find(line)
+            if (fm != null) {
+                val nb = fm.groupValues[1].toIntOrNull() ?: return false
+                val mm = fm.groupValues[2].toIntOrNull() ?: return false
+                val st = fm.range.last + 1
+                if (nb < 8 || nb > 128 || line.length - st != nb * 2) return false
+                for (i in 0 until nb) {
+                    val a = line[st + 2 * i].code - 48
+                    val b = line[st + 2 * i + 1].code - 48
+                    if (a < 0 || a > 63 || b < 0 || b > 63) return false
+                    streamBuf[i] = (a shl 6) or b
+                }
+                scopeView.feedFrame(streamBuf, nb, mm)
+                return true
+            }
+        }
         val m = streamHeader.find(line) ?: return false
         val rate = m.groupValues[1].toDoubleOrNull() ?: return false
         val start = m.range.last + 1
@@ -553,10 +606,20 @@ class MainActivity : AppCompatActivity() {
             val dutyStr = Regex("Duty:\\s*([\\d.]+)").find(text)?.groupValues?.get(1)
             val errStr = Regex("Err:\\s*([\\d.]+)").find(text)?.groupValues?.get(1)
             val noSignal = text.contains("NO SIGNAL")
+            val settling = text.contains("SETTLING") || text.contains("MEASURING")
+            Regex("Target:\\s*([\\d.]+)").find(text)?.groupValues?.get(1)?.toDoubleOrNull()?.let {
+                espTarget = it
+                lastStatusRxMs = SystemClock.elapsedRealtime()
+            }
 
             dutyStr?.let { rDuty.text = "$it%" }
             errStr?.let { rError.text = "$it%" }
 
+            if (settling) {
+                rMeasured.text = if (text.contains("SETTLING")) "SETTLING…" else "MEASURING…"
+                rError.text = "--"
+                return
+            }
             lastWaveform = !noSignal
             if (lastWaveform && measuredHz != null) {
                 lastMeasuredHz = measuredHz
@@ -642,6 +705,7 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(repeatRunnable)
         handler.removeCallbacks(startupRunnable)
         handler.removeCallbacks(uiTick)
+        handler.removeCallbacks(syncTick)
         keepReading = false
         try { unregisterReceiver(usbReceiver) } catch (_: Exception) {}
         disconnect("app closed")
