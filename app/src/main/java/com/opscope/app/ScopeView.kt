@@ -13,9 +13,9 @@ import android.view.View
 import kotlin.math.max
 import kotlin.math.min
 
-// Live streaming scope. Samples are pushed in continuously with feed(); every
-// frame draws the newest few cycles, locked to a rising edge so a steady signal
-// stands still (like a real scope's trigger). Slow signals (< 5 Hz) just roll.
+// Live streaming scope. Raw samples (low frequencies) go through feed(); folded
+// one-period frames (higher frequencies) go through feedFrame(). Either way the
+// trace is locked to a rising edge so a steady signal stands still.
 class ScopeView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
@@ -63,6 +63,12 @@ class ScopeView @JvmOverloads constructor(
     private val path = Path()
     private val win = IntArray(CAP / 2)
 
+    // Folded-period frame from the ESP32 ("Q" blocks): one signal period, n points.
+    private val frame = IntArray(128)
+    private var frameN = 0
+    private var frameM = 0
+    private var frameMs = 0L
+
     private val scaleDetector = ScaleGestureDetector(
         context,
         object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -94,6 +100,20 @@ class ScopeView @JvmOverloads constructor(
         postInvalidateOnAnimation()
     }
 
+    // One folded period. m = 0: real-time samples of one period.
+    // m > 0: equivalent-time (stroboscopic) reconstruction of a repeating signal.
+    fun feedFrame(samples: IntArray, count: Int, m: Int) {
+        if (count < 8 || count > frame.size) return
+        synchronized(lock) {
+            for (i in 0 until count) frame[i] = samples[i]
+            frameN = count
+            frameM = m
+            frameMs = SystemClock.elapsedRealtime()
+        }
+        lastDataMs = frameMs
+        postInvalidateOnAnimation()
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val w = width.toFloat()
@@ -112,7 +132,34 @@ class ScopeView @JvmOverloads constructor(
 
         // ---- copy out the window to draw ----
         var n = 0
+        var frameMode = false
+        var etsMode = false
         synchronized(lock) {
+            if (frameN >= 8 && now - frameMs < 600L) {
+                frameMode = true
+                etsMode = frameM > 0
+                val fn = frameN
+                var lo = Int.MAX_VALUE; var hi = Int.MIN_VALUE
+                for (i in 0 until fn) { val v = frame[i]; if (v < lo) lo = v; if (v > hi) hi = v }
+                var start = 0
+                if (hi - lo > 40) {
+                    val span = hi - lo
+                    val lowT = lo + span * 0.4
+                    val highT = lo + span * 0.6
+                    var p0 = -1
+                    for (i in 0 until fn) if (frame[i] < lowT) { p0 = i; break }
+                    if (p0 >= 0) {
+                        for (j in 1..fn) {
+                            if (frame[(p0 + j) % fn] >= highT) { start = (p0 + j) % fn; break }
+                        }
+                    }
+                }
+                val total = fn * 3
+                val want = (total / zoomLevel).toInt().coerceIn(fn, total)
+                for (i in 0 until want) win[i] = frame[(start + i) % fn]
+                n = want
+            } else
+            run {
             val avail = min(head, CAP.toLong()).toInt()
             if (avail >= 8 && rate > 0) {
                 val f = targetFreqHz.coerceAtLeast(0.5)
@@ -145,10 +192,13 @@ class ScopeView @JvmOverloads constructor(
                 for (i in 0 until wSize) win[i] = ring[((startAbs + i) % CAP).toInt()]
                 n = wSize
             }
+            }
         }
 
         val status = when {
             n == 0 -> "REAL ADC · WAITING FOR STREAM"
+            fresh && frameMode && etsMode -> "LIVE · EQUIVALENT-TIME · repeating signal"
+            fresh && frameMode -> "LIVE · REAL-TIME · 1 cycle × 3"
             fresh -> "LIVE · " + formatRate(rate)
             else -> "NO DATA"
         }
@@ -200,7 +250,7 @@ class ScopeView @JvmOverloads constructor(
         if (r >= 1000) "%.1f kS/s".format(r / 1000.0) else "%.0f S/s".format(r)
 
     fun clearCapture() {
-        synchronized(lock) { head = 0L }
+        synchronized(lock) { head = 0L; frameN = 0 }
         sampleRateHz = 0.0
         lastDataMs = 0L
         avgCounts = 0.0
